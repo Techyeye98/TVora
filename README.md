@@ -34,7 +34,7 @@ Changing the phone app's appearance does not change a TV until its owner applies
 <p align="center">
   <img src="docs/screenshots/tvora_welcome_dark.png" width="240" alt="TVora welcome screen">
   <img src="docs/screenshots/tvora_dashboard_dark.png" width="240" alt="TVora TV dashboard">
-  <img src="docs/screenshots/tvora_home_studio_dark.png" width="240" alt="TVora Home studio">
+  <img src="docs/screenshots/tvora_home_studio_dark.png" width="240" alt="TVora Home screen">
 </p>
 
 Screenshots in `docs/screenshots` are captured from the actual Compose UI with Robolectric, not
@@ -46,8 +46,8 @@ Use an Android 9+ phone and a supported Android/Google TV on the same trusted Wi
 Enable TV debugging, select the TV and approve the phone on the TV. For modern Wireless debugging,
 use the TV's six-digit pairing code, pairing port and its separate connection port.
 
-Review the plan before **Make it clean**. Use **Home studio** for appearance and app placement.
-For an existing TV, after updating TVora open **Home screen → Quick buttons**, leave
+Review the plan before **Make it clean**. Use **Home screen** for appearance and app placement.
+For an existing TV, after updating TVora open **Home screen â†’ Quick buttons**, leave
 **Arrange apps on TV** on and tap **Done**. This sends the new button and reapplies the theme's
 dock spacing. More apps remain below the dock and are reached with Down on the remote.
 Save a copy of the recovery scripts outside the app. Finish closes debugging unless you chose
@@ -86,7 +86,7 @@ Core operation, state-machine and authenticated packet/AEAD tests run locally. T
 is replaced by an agreed-secret test double in JVM protocol tests. Native SPAKE2, Android Keystore,
 TLS pairing, headphones and full cleanup/restore still need real phone/TV validation.
 
-Focused TVora screenshots cover onboarding, dashboard, Home studio and large text. Older upstream
+Focused TVora screenshots cover onboarding, dashboard, Home screen and large text. Older upstream
 goldens remain as reference; they are not a visual baseline for the redesign. Record current
 baselines on Linux before enabling a full screenshot-verification gate.
 
