@@ -335,9 +335,9 @@ class ConfigDifferentialTest {
             val u = assertIs<UpstreamLauncher.Outcome.Loaded>(up.load(LauncherConfigCodec.encode(doc), wallpaper = false)).config
             val kept = DockLayers.trim(chosen, columns)
             assertEquals(kept.map { it.value }, u.dockApps, "#$i dock_apps")
-            assertEquals(DockLayers.rowsBelowDock(kept.size, columns), u.rowsBelowDock, "#$i rows_below_dock")
+            assertEquals(theme.rowsBelowDock ?: 0, u.rowsBelowDock, "#$i rows_below_dock")
             assertEquals(columns, u.columns)
-            assertEquals(kept.size <= 2 * columns, u.v24.dockTitle, "#$i dock_title: off only for three rows (D1)")
+            assertEquals(true, u.v24.dockTitle, "#$i dock title stays visible")
             // AppAdapter.reload: the skips, then the comparator (labels: the package names).
             val seen = HashSet<String>()
             val tiles = activities.filter { a ->
@@ -349,9 +349,9 @@ class ConfigDifferentialTest {
                 val fb = u.dockApps.indexOf(b)
                 if (fa >= 0 || fb >= 0) { if (fa < 0) 1 else if (fb < 0) -1 else fa.compareTo(fb) } else a.compareTo(b, ignoreCase = true)
             }
-            val inView = grid.chunked(u.columns).take(1 + u.rowsBelowDock)
+            val inView = grid.chunked(u.columns)
             val sheet = DockLayers.rows(DockLayers.decode(kept, { it in shownOnTv }, columns), columns).map { row -> row.map { it.value } }
-            assertTrue(sheet.size <= inView.size, "#$i the TV keeps every sheet row in view")
+            assertTrue(sheet.size <= inView.size, "#$i every sheet row remains reachable by scrolling")
             // With every app shown the rows match exactly; with some not shown, the TV fills the
             // freed slots after the sheet's apps with the next apps by name.
             sheet.forEachIndexed { k, row -> assertEquals(row, inView[k].take(row.size), "#$i row ${k + 1}") }

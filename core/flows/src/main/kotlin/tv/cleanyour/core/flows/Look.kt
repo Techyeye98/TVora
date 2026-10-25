@@ -13,8 +13,8 @@ import tv.cleanyour.core.spec.Theme
 import tv.cleanyour.core.store.BlobStore
 
 // The dock and the look as the one config.json the launcher reads: the theme's doc (or the
-// launcher's defaults) with dock_apps the dock and its rows in order and rows_below_dock the rows
-// under the dock that hold an app (DockLayers), encoded and stored in the BlobStore. Setup's plan
+// launcher's defaults) with dock_apps the dock and its rows in order. The theme controls how many
+// rows stay visible, independently of the app list. Encoded and stored in the BlobStore. Setup's plan
 // (RFC-DOCK-1), Manage's ApplyTheme and the Modules add (RFC-CARDS-1) all push what this makes, so
 // one choice is the same bytes wherever it is sent from. The wallpaper is the theme's own, when it
 // has one. module_cards is always written: `cards` is this TV's cards choice (Cards).

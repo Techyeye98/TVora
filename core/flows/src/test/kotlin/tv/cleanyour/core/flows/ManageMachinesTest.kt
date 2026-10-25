@@ -604,13 +604,13 @@ class ManageMachinesTest {
         m.dispatch(HomeScreenIntent.SetDock(six + six.first())); settle()
         val apply = h.planner.requests.filterIsInstance<PlanRequest.ApplyTheme>().single()
         assertEquals(six, apply.doc.dockApps)
-        assertEquals(1, apply.doc.rowsBelowDock)
+        assertNull(apply.doc.rowsBelowDock)
         // The blob the plan pushes is exactly these bytes, and the launcher reads them back the same.
         val bytes = LauncherConfigCodec.encode(apply.doc)
         assertEquals(sha256Of(bytes), apply.config.sha256)
         val back = assertIs<DecodeResult.Ok>(LauncherConfigCodec.decode(bytes)).doc
         // RFC-CARDS-1: no kept choice and no overlay on the TV: Manage keeps the launcher's default, on.
-        assertEquals(LauncherConfigDoc(dockApps = six, rowsBelowDock = 1, moduleCards = true), back)
+        assertEquals(LauncherConfigDoc(dockApps = six, moduleCards = true, reorderButton = true), back)
         assertEquals(six, m.state.value.dock.map { it.pkg })
         // Later the second app is switched off on the TV: the rest move up a slot, as on the TV.
         h.snapshots.save(Samples.snapshot(packages = Samples.miTvPackages() + six.associateWith { state(it != six[1]) }, takenAtMs = Samples.NOW_MS + 2))

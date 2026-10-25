@@ -15,13 +15,16 @@ to run the app. TV permissions and debugging authorization are always granted by
   restores its saved place, unless you changed its saved order in between.
 - **Your wallpaper:** choose a photo from your phone. TVora makes a bounded, metadata-stripped JPEG
   copy, with camera orientation handled, and sends it only to your selected TV.
-- **Quick buttons:** Inputs, Wi-Fi and Bluetooth headphones; Settings remains accessible.
+- **Quick buttons:** Inputs, Wi-Fi, Bluetooth headphones and remote app arrangement; Settings remains accessible.
+- **Arrange from the TV:** open the arrows button beside Settings. OK picks up an app, arrows move
+  it, Back places it, and Back again saves and finishes. Extra app rows scroll below the dock;
+  adding or moving apps preserves the chosen theme's title and spacing below the clock.
 - **Cleanup with recovery:** review the plan, save a restore point, disable supported packages and
   put them back individually or restore the supported previous setup.
 - **Connect from the phone:** legacy network ADB and experimental pairing-code/TLS support.
 - **Interface:** preserves the upstream Outfit typography, glass surfaces, ambient glow,
   animated TV illustration and interaction motion. TVora's extra controls use the same list rows
-  and sheets. TVora's text-free icon uses a silver screen frame and diagonal light cut.
+  and sheets. TVora's text-free icon is a closed glass TV with two feet and a soft glow.
 
 The bundled TV launcher retains the original black background and app-colour glow by default.
 Changing the phone app's appearance does not change a TV until its owner applies a setting.
@@ -44,6 +47,9 @@ Enable TV debugging, select the TV and approve the phone on the TV. For modern W
 use the TV's six-digit pairing code, pairing port and its separate connection port.
 
 Review the plan before **Make it clean**. Use **Home studio** for appearance and app placement.
+For an existing TV, after updating TVora open **Home screen → Quick buttons**, leave
+**Arrange apps on TV** on and tap **Done**. This sends the new button and reapplies the theme's
+dock spacing. More apps remain below the dock and are reached with Down on the remote.
 Save a copy of the recovery scripts outside the app. Finish closes debugging unless you chose
 to keep it on; enable it again for a later management session.
 

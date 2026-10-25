@@ -6,10 +6,10 @@ The original animated TV illustration, press feedback, sheets and navigation mot
 TVora's additional app visibility, quick-button and photo controls use the existing list-row
 and sheet components. Do not replace this visual system as part of a branding tweak.
 
-TVora is the app name and installed identity. Its text-free symbol is an open widescreen
-frame with a diagonal light cut at the upper right and a floating stand. A restrained
-white-to-silver stroke sits on near black (#080809). The Android themed icon uses the
-same geometry in a single colour. No letters, check mark or coloured accent are used.
+TVora is the app name and installed identity. Its text-free symbol is a closed widescreen
+TV with two angled feet, translucent glass, a soft screen reflection and a restrained
+blue-violet glow on near black (#080809). There is no diagonal pen-like stroke.
+The Android themed icon keeps the complete TV silhouette in one colour.
 Keep the mark inside the Android adaptive-icon safe area. Matching vector sources are
 tvora-mark.svg (app tile) and tvora-symbol.svg (transparent symbol).
 Upstream credits and notices remain visible.

@@ -10,13 +10,15 @@
     <string name="home_studio_intro">Set the scene. Put your favourites first.</string>
     <string name="home_dock_hint">Choose apps and arrange your rows</string>
     <string name="home_visibility_hint">Choose what appears on Home</string>
-    <string name="home_buttons_hint">Inputs, Wi-Fi and headphones</string>
+    <string name="home_buttons_hint">Inputs, Wi-Fi, headphones and app order</string>
     <string name="home_visibility">Apps on Home</string>
     <string name="home_visibility_note">Hide an icon without disabling or uninstalling the app.</string>
     <string name="home_buttons">Quick buttons</string>
     <string name="home_inputs">Inputs / HDMI / AV</string>
     <string name="home_network">Wi-Fi / network</string>
     <string name="home_bluetooth">Bluetooth headphones</string>
+    <string name="home_arrange">Arrange apps on TV</string>
+    <string name="home_arrange_note">Adds the arrows button beside TV Settings. Open it with the remote: OK picks an app, arrows move it, Back places it. Back again saves and finishes.</string>
     <string name="home_photo">Use a photo as wallpaper</string>
     <string name="home_photo_loading">Preparing photo...</string>
     <string name="home_photo_note">Choose a photo from your phone. It stays private.</string>

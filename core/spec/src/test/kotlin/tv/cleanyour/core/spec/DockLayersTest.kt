@@ -59,7 +59,7 @@ class DockLayersTest {
         assertEquals(2, DockLayers.rowsBelowDock(20, 4))
         val doc = DockLayers.applyTo(LauncherConfigDoc(), apps(20))
         assertEquals(apps(12), doc.dockApps)
-        assertEquals(2, doc.rowsBelowDock)
+        assertNull(doc.rowsBelowDock)
     }
 
     // A row only holds apps once the rows above it are full: every row but the last of the cut is
@@ -77,28 +77,30 @@ class DockLayersTest {
         val six = apps(6)
         val doc = DockLayers.applyTo(LauncherConfigDoc(backgroundColor = "#000000"), six + six.take(2))
         assertEquals(six, doc.dockApps, "repeats are dropped")
-        assertEquals(1, doc.rowsBelowDock)
+        assertNull(doc.rowsBelowDock)
         assertEquals("#000000", doc.backgroundColor, "the theme's other keys stay")
         // The six columns theme: six fit in the dock, so no row under it.
         val wide = DockLayers.applyTo(LauncherConfigDoc(columns = 6, rowsBelowDock = 1), six)
         assertEquals(6, DockLayers.columnsOf(wide))
-        assertEquals(0, wide.rowsBelowDock)
+        assertEquals(1, wide.rowsBelowDock)
     }
 
-    // Owner decision D1: three rows (the dock and two under it) write dock_title false, so launcher
-    // 2.4 fits all three on the screen; one or two rows leave the theme's dock_title as it is.
-    @Test fun threeRowsTurnTheDockTitleOff() {
-        assertEquals(false, DockLayers.applyTo(LauncherConfigDoc(), apps(9)).dockTitle)
-        assertEquals(false, DockLayers.applyTo(LauncherConfigDoc(dockTitle = true), apps(12)).dockTitle)
-        assertNull(DockLayers.applyTo(LauncherConfigDoc(), apps(8)).dockTitle)
-        assertNull(DockLayers.applyTo(LauncherConfigDoc(), apps(1)).dockTitle)
-        assertEquals(true, DockLayers.applyTo(LauncherConfigDoc(dockTitle = true), apps(5)).dockTitle)
-        assertEquals(false, DockLayers.applyTo(LauncherConfigDoc(dockTitle = false), apps(4)).dockTitle)
-        assertNull(DockLayers.applyTo(LauncherConfigDoc(), emptyList()).dockTitle)
-        assertEquals(false, DockLayers.applyTo(LauncherConfigDoc(columns = 6), apps(13)).dockTitle)
-        assertNull(DockLayers.applyTo(LauncherConfigDoc(columns = 6), apps(12)).dockTitle)
-        val text = LauncherConfigCodec.encode(DockLayers.applyTo(LauncherConfigDoc(), apps(9))).decodeToString()
-        assertEquals(true, "\"rows_below_dock\": 2," in text && "\"dock_title\": false" in text, text)
+    // Regression: adding apps must not move the dock toward the clock or remove its title.
+    @Test fun addingAndReorderingAppsPreservesTheShelfLayout() {
+        for (columns in listOf(4, 6)) for (n in 1..18) {
+            for (theme in listOf(
+                LauncherConfigDoc(columns = columns),
+                LauncherConfigDoc(columns = columns, rowsBelowDock = 0, dockTitle = true),
+                LauncherConfigDoc(columns = columns, rowsBelowDock = 1, dockTitle = false),
+            )) {
+                for (order in listOf(apps(n), apps(n).reversed())) {
+                    val result = DockLayers.applyTo(theme, order)
+                    assertEquals(theme.rowsBelowDock, result.rowsBelowDock)
+                    assertEquals(theme.dockTitle, result.dockTitle)
+                    assertEquals(DockLayers.trim(order, columns), result.dockApps)
+                }
+            }
+        }
     }
 
     // An empty dock writes no dock_apps (the launcher keeps its own) and leaves the theme's rows.
@@ -135,7 +137,7 @@ class DockLayersTest {
             assertEquals(doc, back)
             val decoded = DockLayers.decode(back.dockApps.orEmpty(), { true }, DockLayers.columnsOf(back))
             assertEquals(DockLayers.trim(apps(n), columns), decoded)
-            if (n > 0) assertEquals(DockLayers.rows(decoded, columns).size - 1, back.rowsBelowDock)
+            assertEquals(theme.rowsBelowDock, back.rowsBelowDock)
         }
     }
 }

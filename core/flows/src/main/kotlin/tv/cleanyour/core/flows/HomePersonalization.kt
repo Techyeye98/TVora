@@ -14,6 +14,7 @@ data class HomePersonalization(
     val wallpaperEnabled: Boolean? = null,
     val photo: BlobRef? = null,
     val dim: Int = 35,
+    val arrange: Boolean? = null,
 ) {
     init { require(dim in 0..90) }
 
@@ -27,6 +28,7 @@ data class HomePersonalization(
             dockApps = doc.dockApps?.filterNot { it in hidden.orEmpty() },
             wallpaper = wallpaperEnabled ?: doc.wallpaper,
             wallpaperDim = if (wallpaperEnabled == true) dim else doc.wallpaperDim,
+            reorderButton = arrange != false,
             unknown = extra,
         )
     }
@@ -46,6 +48,7 @@ internal class PersonalHomePrefs(private val store: DocumentStore) {
             inputs = bool("inputs"), network = bool("network"), bluetooth = bool("bluetooth"),
             wallpaperEnabled = bool("wallpaper"), photo = photo,
             dim = (obj["dim"] as? JsonPrimitive)?.intOrNull?.coerceIn(0, 90) ?: 35,
+            arrange = bool("arrange"),
         )
     } ?: HomePersonalization()
 
@@ -55,6 +58,7 @@ internal class PersonalHomePrefs(private val store: DocumentStore) {
             value.inputs?.let { put("inputs", it) }; value.network?.let { put("network", it) }
             value.bluetooth?.let { put("bluetooth", it) }; value.wallpaperEnabled?.let { put("wallpaper", it) }
             put("dim", value.dim)
+            value.arrange?.let { put("arrange", it) }
             value.photo?.let { p -> put("photo", buildJsonObject {
                 put("sha256", p.sha256.hex); put("size", p.size); put("path", p.path)
             }) }

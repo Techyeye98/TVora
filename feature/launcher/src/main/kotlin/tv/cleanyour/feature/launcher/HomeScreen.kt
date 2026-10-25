@@ -151,13 +151,17 @@ fun HomeScreen(state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, onB
     }
     if (buttonsOpen) CytBottomSheet({ buttonsOpen = false }) {
         var value by remember(state.personal) { mutableStateOf(state.personal) }
-        SheetHeader(stringResource(R.string.home_buttons))
-        SwitchRow(stringResource(R.string.home_inputs), value.inputs != false, { value = value.copy(inputs = it) })
-        SwitchRow(stringResource(R.string.home_network), value.network != false, { value = value.copy(network = it) })
-        SwitchRow(stringResource(R.string.home_bluetooth), value.bluetooth == true, { value = value.copy(bluetooth = it) })
-        PrimaryButton(stringResource(R.string.action_done), {
-            onIntent(HomeScreenIntent.SetPersonal(value)); buttonsOpen = false
-        }, Modifier.padding(top = 16.dp))
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            SheetHeader(stringResource(R.string.home_buttons))
+            SwitchRow(stringResource(R.string.home_inputs), value.inputs != false, { value = value.copy(inputs = it) })
+            SwitchRow(stringResource(R.string.home_network), value.network != false, { value = value.copy(network = it) })
+            SwitchRow(stringResource(R.string.home_bluetooth), value.bluetooth == true, { value = value.copy(bluetooth = it) })
+            SwitchRow(stringResource(R.string.home_arrange), value.arrange != false, { value = value.copy(arrange = it) })
+            Body(stringResource(R.string.home_arrange_note), Modifier.padding(top = 8.dp))
+            PrimaryButton(stringResource(R.string.action_done), {
+                onIntent(HomeScreenIntent.SetPersonal(value)); buttonsOpen = false
+            }, Modifier.padding(top = 16.dp))
+        }
     }
     state.stockPreview?.let { plan ->
         CytBottomSheet({ onIntent(HomeScreenIntent.CancelPreview) }) { StockPreviewContent(plan, onIntent) }

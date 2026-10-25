@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 108 108">
-  <defs><linearGradient id="silver" x1="34" y1="32" x2="73" y2="74" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset=".55" stop-color="#e8e8ec"/><stop offset="1" stop-color="#a5a5ae"/></linearGradient></defs>
-  <path d="M65,35H39C33.477,35 29,39.477 29,45V57C29,62.523 33.477,67 39,67H69C74.523,67 79,62.523 79,57V49" fill="none" stroke="url(#silver)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M70,43L80,33" fill="none" stroke="url(#silver)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M46,74H62" fill="none" stroke="url(#silver)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 108 108"><defs>
+<radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="51" cy="57" r="37"><stop stop-color="#5b6cff" stop-opacity=".282"/><stop offset=".55" stop-color="#5b6cff" stop-opacity=".125"/><stop offset="1" stop-color="#5b6cff" stop-opacity="0"/></radialGradient>
+<linearGradient id="glass" gradientUnits="userSpaceOnUse" x1="54" y1="34" x2="54" y2="67"><stop stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity=".04"/></linearGradient>
+<linearGradient id="edge" gradientUnits="userSpaceOnUse" x1="32" y1="34" x2="75" y2="67"><stop stop-color="#fff" stop-opacity=".95"/><stop offset=".5" stop-color="#fff" stop-opacity=".68"/><stop offset="1" stop-color="#fff" stop-opacity=".4"/></linearGradient>
+<linearGradient id="glint" gradientUnits="userSpaceOnUse" x1="40" y1="36" x2="55" y2="56"><stop stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+</defs><g transform="translate(-27 -27) scale(1.5)"><rect width="108" height="108" fill="url(#glow)"/><path d="M38,34H70C76.075,34 81,38.925 81,45V56C81,62.075 76.075,67 70,67H38C31.925,67 27,62.075 27,56V45C27,38.925 31.925,34 38,34Z" fill="url(#glass)" stroke="url(#edge)" stroke-width="1.5"/><path d="M38,36H70C74.971,36 79,40.029 79,45V46C65,47 46,51 29,58V45C29,40.029 33.029,36 38,36Z" fill="url(#glint)"/><path d="M40,68L36,74M68,68L72,74" fill="none" stroke="#fff" stroke-opacity=".65" stroke-width="1.8" stroke-linecap="round"/></g></svg>

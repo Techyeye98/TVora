@@ -88,7 +88,7 @@ class WhatWeFoundMatchesThePlanTest {
     // install and before the guarded home screen switch, and "Show commands" names the push.
     // RFC-CARDS-1: with module_cards false, so the new home screen asks about no card on its first start.
     private fun assertTheLookIsPushed(plan: Plan, dock: List<PackageName>, rowsBelowDock: Int) {
-        val expected = LauncherConfigCodec.encode(DockLayers.applyTo(LauncherConfigDoc(), dock).copy(moduleCards = false))
+        val expected = LauncherConfigCodec.encode(DockLayers.applyTo(LauncherConfigDoc(), dock).copy(moduleCards = false, reorderButton = true))
         val pushes = plan.steps.filter { (it.op as? Op.PushAsset)?.dest == FileOverlayTransport.CONFIG }
         val push = pushes.single().op as Op.PushAsset
         assertEquals(sha256Of(expected), push.sha256)
@@ -98,7 +98,7 @@ class WhatWeFoundMatchesThePlanTest {
         // An empty dock leaves dock_apps (and the rows) out, so the launcher keeps its own dock.
         val trimmed = DockLayers.trim(dock, DockLayers.DEFAULT_COLUMNS)
         assertEquals(trimmed.ifEmpty { null }, back.dockApps)
-        assertEquals(if (trimmed.isEmpty()) null else rowsBelowDock, back.rowsBelowDock)
+        assertEquals(null, back.rowsBelowDock, "app count must not change the visible shelf layout")
         assertEquals(false, back.moduleCards, "a first Setup never turns module cards on")
         assertEquals(false, LauncherConfigCodec.effective(back, LauncherConfigCodec.builtInDefaults).moduleCards)
         val theme = plan.steps.filter { it.group == DefaultPlanner.GROUP_THEME }
@@ -306,7 +306,7 @@ class WhatWeFoundMatchesThePlanTest {
         val commands = SetupMachine.commandsOf(plan)
         assertTrue(commands.any { "config.json" in it && config.sha256.hex in it }, "Show commands names the pushed config.json: $commands")
         val back = assertIs<DecodeResult.Ok>(LauncherConfigCodec.decode(bytes)).doc
-        assertEquals(LauncherConfigDoc(dockApps = apps, rowsBelowDock = 1), back)
+        assertEquals(LauncherConfigDoc(dockApps = apps), back)
         assertEquals(listOf(apps.take(4), apps.drop(4)), DockLayers.rows(back.dockApps.orEmpty(), DockLayers.columnsOf(back)))
     }
 }

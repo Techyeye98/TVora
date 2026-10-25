@@ -35,10 +35,27 @@ class HomePersonalizationTest {
         home.save(id, original)
         val prefs = PersonalHomePrefs(h.documents)
         val photo = BlobRef(Sha256("a".repeat(64)), 123, "/private/photo.jpg")
-        val value = HomePersonalization(listOf(music), false, true, true, true, photo, 45)
+        val value = HomePersonalization(listOf(music), false, true, true, true, photo, 45, arrange = false)
         prefs.save(id, value)
         assertEquals(value, prefs.load(id))
         assertEquals(original, home.load(id))
+    }
+
+    @Test fun remoteArrangeIsAvailableWithoutChangingTheShelfOrAppOrder() = runTest {
+        val h = Harness()
+        val dock = List(12) { PackageName("com.example.app$it") }
+        val theme = Theme("default", "Default", "", LauncherConfigDoc(rowsBelowDock = 0, dockTitle = true), null)
+        for (apps in listOf(dock.take(4), dock.take(8), dock, dock.reversed())) {
+            val look = Look.encode(ConfigEncoder.Codec, h.blobs, theme, apps, false)
+            assertEquals(apps, look.doc.dockApps)
+            assertEquals(0, look.doc.rowsBelowDock)
+            assertEquals(true, look.doc.dockTitle)
+            assertEquals(true, look.doc.reorderButton)
+        }
+        val off = Look.encode(ConfigEncoder.Codec, h.blobs, theme, dock, false, HomePersonalization(arrange = false))
+        assertEquals(false, off.doc.reorderButton)
+        assertEquals(dock, off.doc.dockApps)
+        assertEquals(0, off.doc.rowsBelowDock)
     }
 
     @Test fun hidingOnlyChangesLauncherConfigAndShowingRestoresSavedOrder() = runTest {

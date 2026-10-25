@@ -722,7 +722,7 @@ class SetupMachineTest {
         toFound(h, m)
         fun last() = h.planner.requests.filterIsInstance<PlanRequest.Setup>().last()
         // RFC-CARDS-1: module_cards is always written, off on a first Setup.
-        fun expected(doc: LauncherConfigDoc, dock: List<PackageName>) = LauncherConfigCodec.encode(DockLayers.applyTo(doc, dock).copy(moduleCards = false))
+        fun expected(doc: LauncherConfigDoc, dock: List<PackageName>) = LauncherConfigCodec.encode(DockLayers.applyTo(doc, dock).copy(moduleCards = false, reorderButton = true))
         // The first plan: the picked dock on the launcher's own look.
         val first = expected(LauncherConfigDoc(), listOf(PackageName("com.netflix.ninja")))
         assertTrue(first.contentEquals(h.blobs.bytes(assertNotNull(last().config))))
@@ -737,7 +737,7 @@ class SetupMachineTest {
         assertTrue(bytes.contentEquals(h.blobs.bytes(sent)), "the blob is DockLayers' bytes for the dock and the look")
         assertEquals(sha256Of(bytes), sent.sha256)
         assertEquals(aurora.wallpaper, last().wallpaper)
-        assertEquals(1, assertIs<tv.cleanyour.core.spec.DecodeResult.Ok>(LauncherConfigCodec.decode(bytes)).doc.rowsBelowDock)
+        assertEquals(aurora.doc.rowsBelowDock, assertIs<tv.cleanyour.core.spec.DecodeResult.Ok>(LauncherConfigCodec.decode(bytes)).doc.rowsBelowDock)
         // The run pushes it; Done remembers what it pushed.
         h.engine.onStart = { p ->
             val i = p.steps.indexOfFirst { it.op is Op.PushAsset }
