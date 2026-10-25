@@ -87,9 +87,11 @@ fun RestoreScreen(state: RestorePointState, onIntent: (RestorePointIntent) -> Un
                 }
             }
             RestorePhase.Failed -> Banner(stringResource(R.string.restore_read_failed), BannerTone.WARNING, Modifier.padding(top = 16.dp))
+            RestorePhase.Incomplete -> Banner(stringResource(R.string.restore_incomplete), BannerTone.WARNING, Modifier.padding(top = 16.dp))
             else -> {}
         }
         Lead(if (baseline != null) msg(R.string.restore_current, "date" to baseline) else stringResource(R.string.restore_none), Modifier.padding(top = 12.dp))
+        Body(stringResource(R.string.restore_scope), Modifier.padding(top = 12.dp))
         ListGroup(Modifier.padding(top = 20.dp, bottom = 24.dp)) {
             ListRow(stringResource(R.string.restore_row_undo), subtitle = baseline?.let { msg(R.string.restore_row_undo_sub, "date" to it) },
                 onClick = if (baseline != null) ({ onIntent(RestorePointIntent.PreviewUndo) }) else null)

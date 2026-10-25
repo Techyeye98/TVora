@@ -8,6 +8,7 @@ import tv.cleanyour.core.model.Platform
 import tv.cleanyour.core.model.TvId
 import tv.cleanyour.core.planner.Plan
 import tv.cleanyour.core.planner.PlanRequest
+import tv.cleanyour.core.engine.RunStatus
 
 // M6 Restore point (UX 4.13, F10): Undo everything with its preview, the one outlined danger button
 // inside its confirmation sheet, the credential prompt, narration, and the end line; "Save a copy"
@@ -21,6 +22,7 @@ sealed interface RestorePhase {
     data class Working(val kind: String, val percent: Int, val lines: List<String>) : RestorePhase   // kind: "undo" or "factory"
     data class Finished(val kind: String, val atMs: Long) : RestorePhase
     data object Failed : RestorePhase
+    data object Incomplete : RestorePhase
 }
 
 data class RestorePointState(
@@ -109,9 +111,11 @@ class RestorePointMachine(
         }
         when (r) {
             is WriteResult.Done -> {
-                d.tv(tvId)?.let { d.tvs.upsert(it.copy(launcher = if (p.removeLauncher) null else it.launcher)) }
-                send(Phase(RestorePhase.Finished("undo", d.snapshots.baseline(tvId)?.takenAtMs ?: d.clock.nowMs())))
-                effect(ManageEffect.HapticDouble)
+                if (r.restoredAll()) {
+                    d.tv(tvId)?.let { d.tvs.upsert(it.copy(launcher = if (p.removeLauncher) null else it.launcher)) }
+                    send(Phase(RestorePhase.Finished("undo", d.snapshots.baseline(tvId)?.takenAtMs ?: d.clock.nowMs())))
+                    effect(ManageEffect.HapticDouble)
+                } else send(Phase(RestorePhase.Incomplete))
             }
             WriteResult.GateCancelled, WriteResult.NoTv, is WriteResult.Paused -> send(Phase(RestorePhase.Preview(p, confirming = false)))   // Paused: the open-run card (O2)
             else -> send(Phase(RestorePhase.Failed))
@@ -122,8 +126,14 @@ class RestorePointMachine(
     private suspend fun factoryReset() {
         send(Phase(RestorePhase.Working("factory", 0, emptyList())))
         val r = writer.write(tvId, PlanRequest.BeforeFactoryReset) { b -> if (b is Busy.Working) send(Phase(RestorePhase.Working("factory", b.percent, b.lines))) }
-        send(Phase(if (r is WriteResult.Done) RestorePhase.Finished("factory", d.clock.nowMs()) else if (r is WriteResult.GateCancelled || r is WriteResult.NoTv || r is WriteResult.Paused) RestorePhase.Idle else RestorePhase.Failed))
+        send(Phase(when {
+            r is WriteResult.Done -> if (r.restoredAll()) RestorePhase.Finished("factory", d.clock.nowMs()) else RestorePhase.Incomplete
+            r is WriteResult.GateCancelled || r is WriteResult.NoTv || r is WriteResult.Paused -> RestorePhase.Idle
+            else -> RestorePhase.Failed
+        }))
     }
+
+    private fun WriteResult.Done.restoredAll() = finished.status == RunStatus.COMPLETED && finished.skipped.isEmpty()
 
     // Called by the app with the stream SAF opened for the CreateDocument effect.
     suspend fun writeBundle(sink: OutputStream): Boolean {

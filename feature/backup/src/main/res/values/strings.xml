@@ -7,6 +7,8 @@
   Screens: M6 Restore point, the undo preview and confirmation (UX 4.13), export, before a factory reset.
 -->
 <resources>
+    <string name="restore_incomplete">Restore did not finish every step. Some changes may already be back. Review Undo everything again to see what remains, then retry.</string>
+    <string name="restore_scope">Restores supported changes recorded by this app. App data, logins, older wallpaper and changes made before TVora are not a full backup.</string>
 
     <!-- Shared button words -->
     <string name="action_back">Back</string>
@@ -55,8 +57,8 @@
     <string name="restore_working_things">{total, plural, other {Turning things back on: {done} of #...}}</string>
     <string name="restore_working_home">Putting the old home screen back...</string>
     <string name="restore_working_wizard">Switching the setup wizard back on...</string>
-    <string name="restore_done_title">Everything is back</string>
-    <string name="restore_done_body">Your TV is as it was on {date}. The restore point is kept in case you change your mind.</string>
+    <string name="restore_done_title">Recorded changes restored</string>
+    <string name="restore_done_body">Supported changes recorded from {date} have been restored. Your restore point is kept.</string>
     <string name="restore_clean_again">Clean it up again</string>
 
     <!-- Before a factory reset -->

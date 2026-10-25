@@ -24,9 +24,9 @@ jobs:
       - name: Install Android build dependencies
         run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
       - name: Core tests and module boundaries
-        run: bash gradlew --no-daemon :core:ops:test :core:flows:test :adb:pairing:test checkModuleGraph
+        run: bash gradlew --no-daemon :core:ops:test :core:planner:test :core:engine:test :core:backup:test :core:flows:test :adb:pairing:test checkModuleGraph
       - name: Android APK and lint
-        run: bash gradlew --no-daemon :app:assembleFullDebug :app:lintFullDebug
+        run: bash gradlew --no-daemon :app:testFullDebugUnitTest :app:assembleFullDebug :app:lintFullDebug
       - name: Upload debug preview
         uses: actions/upload-artifact@v4
         with:

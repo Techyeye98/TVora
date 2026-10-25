@@ -272,6 +272,36 @@ class ManageMachinesTest {
         assertFalse(undo.removeLauncher)
     }
 
+    @Test fun incompleteRestoreNeverReportsSuccessOrForgetsTheLauncher() = runTest(timeout = 30.seconds) {
+        for (status in listOf(RunStatus.COMPLETED_WITH_SKIPS, RunStatus.ROLLED_BACK, RunStatus.ABANDONED)) {
+            val h = Harness()
+            val launcher = LauncherState(9, Samples.zeroHash, null, null)
+            val tv = h.knownTv().copy(launcher = launcher)
+            h.tvs.upsert(tv)
+            h.ranDisable(tv, listOf(adPkg))
+            h.respond(PlanKind.UNDO_EVERYTHING, listOf(Op.Enable(adPkg)))
+            h.engine.onStart = { p -> finish(p, if (p.kind == PlanKind.UNDO_EVERYTHING) status else RunStatus.COMPLETED) }
+            val m = RestorePointMachine(h.manageDeps(), backgroundScope, tv.id)
+            settle()
+            m.dispatch(RestorePointIntent.PreviewUndo); settle()
+            m.dispatch(RestorePointIntent.RemoveLauncher(true)); settle()
+            m.dispatch(RestorePointIntent.Confirm); settle()
+            m.dispatch(RestorePointIntent.PutEverythingBack); settle()
+            assertIs<RestorePhase.Incomplete>(m.state.value.phase, status.name)
+            assertEquals(launcher, h.tvs.tvs.value.single { it.id == tv.id }.launcher, status.name)
+        }
+    }
+
+    @Test fun factoryResetPreparationWithSkippedStepsIsNotReportedReady() = runTest(timeout = 30.seconds) {
+        val h = Harness()
+        val tv = h.knownTv()
+        h.engine.onStart = { p -> finish(p, if (p.kind == PlanKind.BEFORE_FACTORY_RESET) RunStatus.COMPLETED_WITH_SKIPS else RunStatus.COMPLETED) }
+        val m = RestorePointMachine(h.manageDeps(), backgroundScope, tv.id)
+        settle()
+        m.dispatch(RestorePointIntent.BeforeFactoryReset); settle()
+        assertIs<RestorePhase.Incomplete>(m.state.value.phase)
+    }
+
     @Test fun saveACopyAsksForADocumentAndWritesTheBundle() = runTest(timeout = 30.seconds) {
         val h = Harness()
         val tv = h.knownTv()

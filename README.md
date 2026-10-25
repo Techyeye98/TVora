@@ -2,7 +2,10 @@
 <h1 align="center">TVora</h1>
 <p align="center"><strong>Your TV. Your way.</strong><br>Clean up and personalise your Android TV from your phone.</p>
 
-> Development preview. Real phone-to-TV testing is still required before a public stable release.
+> Initial release. Native TLS pairing remains experimental. Restore checks use simulated TVs;
+> compatibility and recovery on each physical TV still need owner verification.
+
+[Download TVora 0.1.0](https://github.com/Techyeye98/TVora/releases/tag/v0.1.0)
 
 TVora helps you choose the apps you see, arrange your Home screen, add your own wallpaper and
 reduce TV clutter with a recovery path. No ChatGPT account, coding agent or subscription is needed
@@ -81,6 +84,8 @@ The optional full build can install add-ons from the inherited signed index. The
 omits add-on downloads. Neither flavour turns off TV software updaters in this preview.
 
 ## Tests and current limits
+
+See [Restore verification](docs/RESTORE-VERIFICATION.md) for recovery coverage and limits.
 
 Core operation, state-machine and authenticated packet/AEAD tests run locally. The PAKE exchange
 is replaced by an agreed-secret test double in JVM protocol tests. Native SPAKE2, Android Keystore,
