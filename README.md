@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/brand/tvora-mark.svg" width="88" alt="TVora icon"></p>
+<p align="center"><img src="docs/brand/tvora-mark.png" width="88" alt="TVora icon"></p>
 <h1 align="center">TVora</h1>
 <p align="center"><strong>Your TV. Your way.</strong><br>Clean up and personalise your Android TV from your phone.</p>
 
@@ -21,7 +21,7 @@ to run the app. TV permissions and debugging authorization are always granted by
 - **Connect from the phone:** legacy network ADB and experimental pairing-code/TLS support.
 - **Interface:** preserves the upstream Outfit typography, glass surfaces, ambient glow,
   animated TV illustration and interaction motion. TVora's extra controls use the same list rows
-  and sheets. App identity is TVora; the launcher icon is provisional.
+  and sheets. TVora's text-free icon uses a silver screen frame and diagonal light cut.
 
 The bundled TV launcher retains the original black background and app-colour glow by default.
 Changing the phone app's appearance does not change a TV until its owner applies a setting.
