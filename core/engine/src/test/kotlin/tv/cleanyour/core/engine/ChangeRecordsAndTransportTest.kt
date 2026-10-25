@@ -78,11 +78,11 @@ class SingleCallSiteLintTest {
     private val root = Fixtures.repoRoot
     private val mainSources: List<File> by lazy {
         root.walkTopDown()
-            .filter { it.isFile && it.extension == "kt" && it.path.contains("/src/main/") && !it.path.contains("/build/") && !it.path.contains("/third_party/") }
+            .filter { it.isFile && it.extension == "kt" && it.invariantSeparatorsPath.contains("/src/main/") && !it.invariantSeparatorsPath.contains("/build/") && !it.invariantSeparatorsPath.contains("/third_party/") }
             .toList()
     }
 
-    private fun rel(f: File) = f.relativeTo(root).path
+    private fun rel(f: File) = f.relativeTo(root).invariantSeparatorsPath
 
     @Test fun execIsCalledFromOnePlaceInTheEngineAndOnlyByTheProbeAndTheSessionElsewhere() {
         val allowed = listOf(
