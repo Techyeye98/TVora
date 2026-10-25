@@ -1,0 +1,32 @@
+name: TVora preview checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tvora-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install Android build dependencies
+        run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
+      - name: Core tests and module boundaries
+        run: bash gradlew --no-daemon :core:ops:test :core:flows:test :adb:pairing:test checkModuleGraph
+      - name: Android APK and lint
+        run: bash gradlew --no-daemon :app:assembleFullDebug :app:lintFullDebug
+      - name: Upload debug preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: TVora-debug-preview
+          path: app/build/outputs/apk/full/debug/*.apk

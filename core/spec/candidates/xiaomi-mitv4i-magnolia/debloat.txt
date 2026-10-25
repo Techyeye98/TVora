@@ -1,0 +1,56 @@
+# DRAFT, NOT TESTED. Xiaomi Mi TV 4i (ro.product.model MiTV4I, codename magnolia, Amlogic/droidlogic),
+# Android TV 9 (SDK 28), firmware PI.3698, fingerprint Xiaomi/magnolia/magnolia:9/PI/3698:user/release-keys
+# Drafted for cleanyourtv-app issues #111 #126 #161 #190 from the TV reports in those issues, starting
+# from examples/xiaomi-mitv-axso2 (Android 9 on Amlogic/droidlogic, India units, the same "dangal"
+# partner auto-install stub, the same stock home and Live TV app). Every line below is a package the
+# AXSO2 list switches off and that this TV has. Nothing has been tried on a Mi TV 4i yet.
+# Live TV app: com.android.tv. Stock launcher: com.google.android.tvlauncher (not in this list).
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/xiaomi-mitv4i-magnolia/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/xiaomi-mitv4i-magnolia/debloat.txt
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Google sign-in (from the AXSO2 header): tvlauncher's notification panel gets its list from
+# com.google.android.tvrecommendations; with both off, Play Services' "Sign-in required" notice has
+# nowhere to show. pm enable both to sign in again.
+# Kept on purpose: Google Assistant (katniss), Chromecast (mediashell), com.droidlogic.tvinput and
+# com.droidlogic.droidlivetv (HDMI and Live TV), mitv.service, com.xiaomi.android.tvsetup.partnercustomizer,
+# com.google.android.tv.remote.service, every streaming app.
+# setupwraith is installed and the reports say it owns the saved Wi-Fi (WIZARD_WIFI); not in this list.
+#
+# To check before this goes upstream: Wi-Fi after a restart, the remote (every key, including
+# Input, PatchWall and the voice button), every HDMI input, Live TV, casting.
+
+# Xiaomi + Google telemetry
+com.miui.tv.analytics
+com.xiaomi.statistic
+com.google.android.feedback
+com.google.android.tv.bugreportsender
+
+# PatchWall, content rows, sponsored rows, partner auto-installs
+com.mitv.tvhome.atv
+com.xm.webcontent
+com.google.android.tvrecommendations                # also feeds the notification panel, see the sign-in note
+com.google.android.leanbacklauncher.recommendations
+android.autoinstalls.config.xioami.dangal           # Play auto-install of partner apps (sic, "xioami")
+co.sensara.tv.mitv                                  # Sensara partner TV guide (sponsored show recommendations)
+
+# Xiaomi background services
+com.xiaomi.mitv.tvmanager                           # "TV Manager" cleaner
+com.xiaomo.tv.milegal                               # static legal / privacy text screens
+# com.xiaomi.mitv.updateservice                     # firmware updates; owner's choice (updaters are ask rows in the app)
+
+# Preloaded apps
+com.xiaomi.mimusic2
+com.mitv.gallery                                    # Mi Gallery; Media Player still opens USB photos
+com.google.android.videos                           # Play Movies & TV
+com.google.android.play.games
+# com.google.android.youtube.tvmusic                # owner's choice
+
+# Android extras a TV without camera, printer or SIM doesn't use
+com.android.camera2
+com.android.gallery3d
+com.android.printspooler
+com.android.smspush
+# com.google.android.marvin.talkback                # screen reader: keep it if anyone in the house uses it
+# com.android.dreams.basic                          # basic screensaver; owner's choice

@@ -1,0 +1,43 @@
+# DRAFT, NOT TESTED. SHARP AQUOS TVE19A (ro.product.model AQUOS_TVE19A, device sindang, product
+# tcbrae_a), Android TV 11 (API 30), firmware RTOB.250721.001, fingerprint
+# SHARP/tcbrae_a/sindang:11/RTOB.250721.001/13808904:user/release-keys
+# Drafted for cleanyourtv-app issue #17 from the TV report in that issue, starting from
+# examples/sharp-aquos-tve21f (SHARP on MediaTek with CVTE vendor apps, the same stock home). The
+# TVE21F is Android 14; this set is Android 11. Every line below is a package the TVE21F list
+# switches off and that this TV has, plus the Anoki ACR client that the Haier list for the same
+# CVTE MediaTek platform switches off. Nothing has been tried on a TVE19A yet.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/sharp-aquos-tve19a/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/sharp-aquos-tve19a/debloat.txt com.google.android.tvlauncher
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Stock launcher: com.google.android.tvlauncher (.MainActivity). Not in this list.
+# setupwraith is installed and the report says it stays on (WIZARD_STAYS_ON); not in this list.
+#
+# KEEP (never-disable on the TVE21F, present here): com.mediatek.tvinput, com.mediatek.tv.service,
+# com.mediatek.wwtv.tvcenter, com.mediatek.wwtv.setupwizard, com.mediatek.tv.freeviewplay,
+# com.cvte.hotkey.dispatcher, com.mstar.android.tv.disclaimercustomization, com.google.android.tts.
+# Also left alone: com.mediatek.autopair and com.airoha.android.btd (Bluetooth), the factory
+# packages (com.at.factory.factorymanager, com.cvte.tv.at, com.cvte.fac.menu: the TVE21F list
+# switches the first two off, but factory menus are never default-off in the app), the Freeview
+# Play apps, com.cvte.tv.umckmode, umc.com.emanual, com.mediatek.dmp.mediaplayer.
+#
+# To check before this goes upstream: Wi-Fi after a restart, the remote (every key, including
+# Input and the voice button), every HDMI input, Live TV and Freeview Play, casting.
+
+# Retail demo and partner auto-install
+android.autoinstalls.config.sharp            # PAI partner auto-install stub
+tv.anoki.acr.controller                      # Anoki ACR (as on haier-android-tv-dvb2k)
+
+# Google extras
+com.google.android.tvrecommendations         # recommendation and ad rows
+com.google.android.feedback
+com.google.android.partnersetup              # Play partner customizations
+com.google.android.syncadapters.calendar     # calendar sync
+
+# Owner's choice (ask rows on the TVE21F): remove the # to switch off
+# fusion.android.tv.demo                     # retail demo mode
+# com.google.android.backdrop                # ambient screensaver
+# com.google.android.katniss                 # Google Assistant / voice search; the voice button stops working
+# com.google.android.apps.mediashell         # Chromecast
+# com.google.android.tv.remote.service       # phone remote app

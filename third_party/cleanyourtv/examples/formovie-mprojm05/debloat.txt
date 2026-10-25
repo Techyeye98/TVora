@@ -1,0 +1,48 @@
+# Formovie / Fengmi projector MiProjM05 (device eva, Amlogic/droidlogic), Android TV 9 (SDK 28), build PQ3B.190705.003.2102
+#
+# Apply:   TV_HOST=<projector ip> tools/disable.sh examples/formovie-mprojm05/debloat.txt
+# Undo:    TV_HOST=<projector ip> tools/restore.sh examples/formovie-mprojm05/debloat.txt com.google.android.tvlauncher
+# Everything is DISABLED for user 0, never uninstalled. Comment out any line you want to keep.
+#
+# Stock launcher: com.google.android.tvlauncher. Only other HOME claimant is com.android.tv.settings/.system.FallbackHome.
+# Saved Wi-Fi belongs to android.uid.system and com.google.uid.shared, not setupwraith, which does not claim HOME here.
+# The firmware re-enables com.google.android.leanbacklauncher at every boot; it claims no HOME, so it is left alone.
+# HDMI comes from com.droidlogic.tvinput, so the launcher's Inputs pill lists the one HDMI port. No tuner:
+# live_tv_package can be left empty.
+# Kept: com.fengmi.projector.imaging (focus, keystone, auto keystone; auto keystone still works with Camera2 off),
+# com.fengmi.fmsettings, com.fengmi.platform, com.formovie.fmutils, com.formovie.gsettings (projector settings,
+# voice key, USB), com.formovie.launchboard (Formovie app drawer), droidlogic services, Live Channels, Play Store and Services.
+# Remote ("Xiaomi RC", Vendor_2717_Product_32b9.kl): the gear button sends KEY_APPSELECT (580), mapped to
+# KEYCODE_ALL_APPS (284), not KEY_TAPE (384). With tvlauncher disabled it does nothing; settings_key_keycodes 284 with
+# HOME_KEY_SERVICE=1 makes it open Settings, but that helper stops a held Volume Up from ramping (one step per press).
+# Firmware updates come through TvSettings; no separate updater package.
+
+# Telemetry and partner auto-installs
+com.google.android.feedback
+com.google.android.tv.bugreportsender
+android.autoinstalls.config.xiaomi
+com.google.android.apps.nbu.smartconnect.tv  # Google data meter / VPN client
+
+# Recommendations and content
+com.google.android.leanbacklauncher.recommendations
+com.google.android.tvrecommendations
+com.google.android.backdrop                  # Ambient screensaver, off by choice
+cn.formovie.fengos.usermanual
+
+# Preloaded apps, off by choice
+com.espn.score_center
+com.cbsnews.ott
+com.ted.android.tv
+com.nousguide.android.rbtv
+com.amazon.amazonvideo.livingroom
+com.google.android.youtube.tvmusic
+com.google.android.play.games
+com.google.android.videos
+
+# Unused system apps
+com.android.camera2                          # the webcam is driven by Formovie's own cameraservice_fm, not this app
+com.android.printspooler
+com.fengmi.testsuite                         # factory test suite: disabled, never launched
+
+# Stock launcher (only after the new launcher is Home)
+com.google.android.tvlauncher

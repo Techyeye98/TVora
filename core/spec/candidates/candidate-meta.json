@@ -1,0 +1,288 @@
+{
+  "schema": 1,
+  "upstreamCommit": null,
+  "profiles": {
+    "aurzen-boomair": {
+      "match": {
+        "models": [
+          "BOOMAIR"
+        ],
+        "devices": [
+          "himalaya"
+        ],
+        "brand": "AURZEN",
+        "sdkMin": 30,
+        "sdkMax": 30,
+        "fingerprintPrefix": null
+      },
+      "platform": "GOOGLE_TV",
+      "stockLaunchers": [
+        "com.google.android.apps.tv.launcherx"
+      ],
+      "liveTv": null,
+      "setupWraith": null,
+      "quirks": [],
+      "neverDisable": [
+        "com.mediatek.tvinput",
+        "com.mediatek.tv.service",
+        "com.google.android.tv.remote.service"
+      ],
+      "suggestedDock": [],
+      "tested": {
+        "by": "candidate, issue #9",
+        "firmware": "RTMA.250416.043",
+        "daysLivedWith": null,
+        "rebootTested": false,
+        "candidate": true
+      },
+      "groups": {
+        "Telemetry": {
+          "category": "tracking",
+          "ask": false
+        },
+        "Preloaded apps": {
+          "category": "preloads",
+          "ask": false
+        }
+      },
+      "packages": {}
+    },
+    "haier-android-tv-nippori": {
+      "match": {
+        "models": [
+          "haierATVnippori"
+        ],
+        "devices": [
+          "nippori"
+        ],
+        "brand": "Haier",
+        "sdkMin": 30,
+        "sdkMax": 30,
+        "fingerprintPrefix": null
+      },
+      "platform": "ANDROID_TV",
+      "stockLaunchers": [
+        "com.google.android.tvlauncher"
+      ],
+      "liveTv": "com.mediatek.wwtv.tvcenter",
+      "setupWraith": null,
+      "quirks": [],
+      "neverDisable": [
+        "com.mediatek.wwtv.tvcenter",
+        "com.mediatek.tvinput",
+        "com.mediatek.tv.service",
+        "com.mediatek.autopair"
+      ],
+      "suggestedDock": [],
+      "tested": {
+        "by": "candidate, issue #11",
+        "firmware": "RTO5.250812.001",
+        "daysLivedWith": null,
+        "rebootTested": false,
+        "candidate": true
+      },
+      "groups": {
+        "Content recognition and retail demo": {
+          "category": "tracking",
+          "ask": false
+        },
+        "Haier telemetry and content apps": {
+          "category": "ads",
+          "ask": false
+        },
+        "Stock-home recommendation rows and partner auto-install": {
+          "category": "ads",
+          "ask": false
+        }
+      },
+      "packages": {
+        "com.google.android.feedback": {
+          "category": "tracking",
+          "ask": false
+        },
+        "com.google.android.partnersetup": {
+          "category": "tracking",
+          "ask": false
+        }
+      }
+    },
+    "smarttech-apollo-premium4k": {
+      "match": {
+        "models": [
+          "Apollo Premium4K TV"
+        ],
+        "devices": [
+          "marina"
+        ],
+        "brand": "Smarttech",
+        "sdkMin": 30,
+        "sdkMax": 30,
+        "fingerprintPrefix": null
+      },
+      "platform": "GOOGLE_TV",
+      "stockLaunchers": [
+        "com.google.android.apps.tv.launcherx"
+      ],
+      "liveTv": "com.mediatek.wwtv.tvcenter",
+      "setupWraith": null,
+      "quirks": [],
+      "neverDisable": [
+        "com.mediatek.tv.service",
+        "com.mediatek.tvinput",
+        "com.mediatek.autopair",
+        "com.express.bt.autopair",
+        "com.mediatek.wwtv.tvcenter",
+        "com.mediatek.hotkey.dispatcher"
+      ],
+      "suggestedDock": [],
+      "tested": {
+        "by": "candidate, issue #15",
+        "firmware": "RTMA.250416.028",
+        "daysLivedWith": null,
+        "rebootTested": false,
+        "candidate": true
+      },
+      "groups": {
+        "Telemetry": {
+          "category": "tracking",
+          "ask": false
+        },
+        "Content rows and partner extras": {
+          "category": "other",
+          "ask": false
+        },
+        "Preloaded apps": {
+          "category": "preloads",
+          "ask": false
+        }
+      },
+      "packages": {}
+    },
+    "sharp-aquos-tve19a": {
+      "match": {
+        "models": [
+          "AQUOS_TVE19A"
+        ],
+        "devices": [
+          "sindang"
+        ],
+        "brand": "SHARP",
+        "sdkMin": 30,
+        "sdkMax": 30,
+        "fingerprintPrefix": null
+      },
+      "platform": "ANDROID_TV",
+      "stockLaunchers": [
+        "com.google.android.tvlauncher"
+      ],
+      "liveTv": "com.mediatek.wwtv.tvcenter",
+      "setupWraith": null,
+      "quirks": [],
+      "neverDisable": [
+        "com.mediatek.tvinput",
+        "com.mediatek.tv.service",
+        "com.mediatek.wwtv.tvcenter",
+        "com.mediatek.wwtv.setupwizard",
+        "com.mediatek.tv.freeviewplay",
+        "com.cvte.hotkey.dispatcher",
+        "com.mstar.android.tv.disclaimercustomization",
+        "com.google.android.tts"
+      ],
+      "suggestedDock": [],
+      "tested": {
+        "by": "candidate, issue #17",
+        "firmware": "RTOB.250721.001",
+        "daysLivedWith": null,
+        "rebootTested": false,
+        "candidate": true
+      },
+      "groups": {
+        "Retail demo and partner auto-install": {
+          "category": "ads",
+          "ask": false
+        },
+        "Google extras": {
+          "category": "other",
+          "ask": false
+        }
+      },
+      "packages": {
+        "com.google.android.feedback": {
+          "category": "tracking",
+          "ask": false
+        },
+        "com.google.android.partnersetup": {
+          "category": "tracking",
+          "ask": false
+        },
+        "tv.anoki.acr.controller": {
+          "category": "tracking",
+          "ask": false
+        },
+        "com.google.android.tvrecommendations": {
+          "category": "ads",
+          "ask": false
+        }
+      }
+    },
+    "xiaomi-mitv4i-magnolia": {
+      "match": {
+        "models": [
+          "MiTV4I"
+        ],
+        "devices": [
+          "magnolia"
+        ],
+        "brand": "Xiaomi",
+        "sdkMin": 28,
+        "sdkMax": 28,
+        "fingerprintPrefix": null
+      },
+      "platform": "ANDROID_TV",
+      "stockLaunchers": [
+        "com.google.android.tvlauncher"
+      ],
+      "liveTv": "com.android.tv",
+      "setupWraith": null,
+      "quirks": [],
+      "neverDisable": [
+        "com.droidlogic.tvinput",
+        "com.droidlogic.droidlivetv",
+        "mitv.service",
+        "com.xiaomi.android.tvsetup.partnercustomizer",
+        "com.google.android.tv.remote.service"
+      ],
+      "suggestedDock": [],
+      "tested": {
+        "by": "candidate, issue #111 #126 #161 #190",
+        "firmware": "PI.3698",
+        "daysLivedWith": null,
+        "rebootTested": false,
+        "candidate": true
+      },
+      "groups": {
+        "Xiaomi + Google telemetry": {
+          "category": "tracking",
+          "ask": false
+        },
+        "PatchWall, content rows, sponsored rows, partner auto-installs": {
+          "category": "ads",
+          "ask": false
+        },
+        "Xiaomi background services": {
+          "category": "brand",
+          "ask": false
+        },
+        "Preloaded apps": {
+          "category": "preloads",
+          "ask": false
+        },
+        "Android extras a TV without camera, printer or SIM doesn't use": {
+          "category": "preloads",
+          "ask": false
+        }
+      },
+      "packages": {}
+    }
+  }
+}

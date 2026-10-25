@@ -1,0 +1,45 @@
+# DRAFT, NOT TESTED. Smarttech Apollo Premium4K TV (ro.product.model "Apollo Premium4K TV",
+# manufacturer Expressluck, device marina, product SMARTTECH_4K_ATV3), Google TV 11 (API 30),
+# firmware RTMA.250416.028, fingerprint
+# Smarttech/SMARTTECH_4K_ATV3/marina:11/RTMA.250416.028/13485761:user/release-keys
+# Drafted for cleanyourtv-app issue #15 from the TV report in that issue, starting from
+# examples/aipro2k (the same maker, Expressluck, on MediaTek with the same CVTE / Expressluck vendor
+# apps and launcherx). Every line below is a package aipro2k switches off and that this TV has.
+# Nothing has been tried on a marina set yet.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/smarttech-apollo-premium4k/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/smarttech-apollo-premium4k/debloat.txt com.google.android.apps.tv.launcherx
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Stock launcher: com.google.android.apps.tv.launcherx. setupwraith is installed and the report
+# says it stays on (WIZARD_STAYS_ON). Neither is in this draft: on aipro2k they go together, last,
+# and only after the new launcher is Home.
+#
+# KEEP (from the aipro2k header, present on this TV): com.mediatek.tv.service, com.mediatek.tvinput,
+# com.mediatek.autopair and com.express.bt.autopair (remote and HDMI), com.mediatek.wwtv.tvcenter,
+# com.mediatek.wwtv.setupwizard, com.mediatek.hotkey.dispatcher (remote hot keys),
+# com.google.android.katniss, com.google.android.tv.remote.service, com.mediatek.wwtv.mediaplayer
+# (USB media), the factory packages (com.cvte.tv.at, com.at.factory.*, com.express.at.factory.factorymanager,
+# com.express.fac.test, com.expressluck.facmenu). Left alone: the com.expressluck.*.overlay packages,
+# com.expressluck.tvhelpmanual, com.dolby.android.audio.service.
+# Left out on purpose: com.mediatek.android.leanbacklauncher.partnercustomizer (aipro2k switches it
+# off, but another MediaTek list reports com.mediatek.tv.service crash-looping without it).
+#
+# To check before this goes upstream: Wi-Fi after a restart, the remote (every key, including
+# Input and the microphone button), every HDMI input, Live TV, casting.
+
+# Telemetry
+com.google.android.feedback
+com.google.android.partnersetup
+
+# Content rows and partner extras
+com.google.android.syncadapters.calendar
+
+# Preloaded apps
+com.google.android.play.games
+
+# Owner's choice (ask rows on aipro2k): remove the # to switch off
+# fusion.android.tv.demo                    # retail demo mode
+# com.google.android.youtube.tvmusic
+# com.google.android.apps.tv.dreamx         # Google screensaver
+# com.google.android.tts                    # speech for accessibility

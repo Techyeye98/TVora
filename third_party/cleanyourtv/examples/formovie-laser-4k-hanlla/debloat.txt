@@ -1,0 +1,30 @@
+# Formovie Laser 4K projector (codename hanlla, MediaTek T31 / m7632), Android TV 14 (SDK 34),
+# firmware UKNV.260619.001. Classic Android TV home (com.google.android.tvlauncher), not Google TV.
+# Live TV / input app: com.mediatek.wwtv.tvcenter (already live_tv_package and hidden in config.xml).
+# Stock launcher: com.google.android.tvlauncher (build-and-install.sh finds it by itself).
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/formovie-laser-4k-hanlla/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/formovie-laser-4k-hanlla/debloat.txt
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# A light list: there is no Formovie ad or content service on this build, and the projector's own
+# apps carry the features. Keep: cn.formovie.projectormanager (persistent; BLE remote service, global
+# keys, projector settings: focus, keystone), com.formovie.launchboard (all-apps overlay on a remote
+# key), cn.formovie.fengos.usermanual, com.fengmi.testsuite (factory tests, left alone), fusion.android.tv.demo (listens
+# for the input/source button), com.mediatek.* (tv service, tvinput, tvcenter, autopair = BT remote
+# pairing), com.dolby.android.audio.service (Dolby / optical out), com.mstar.android.tv.disclaimercustomization.
+# Never launch mediatek.factorymenu.ui.
+# Already disabled at the factory: com.google.android.play.games, com.google.android.youtube.tvmusic,
+# com.google.android.videos.
+# The only Ethernet is the built-in RJ45 (eth0); USB debugging does not affect it.
+# 1.8 GB RAM. Default IME is Gboard.
+
+# Google telemetry and feedback
+com.google.android.feedback
+com.android.tv.feedbackconsent
+com.google.android.partnersetup        # Google RLZ attribution pings
+android.autoinstalls.config.fomovie    # Play auto-install of partner apps (sic, "fomovie")
+
+# Stock home extras, unused once the new launcher is Home
+com.google.android.tvrecommendations   # recommendation/ad rows for tvlauncher
+com.google.android.backdrop            # Ambient Mode screensaver (Immich is the screensaver here)

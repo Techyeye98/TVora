@@ -1,0 +1,84 @@
+# Sony BRAVIA 4K VH2 (device BRAVIA_VH2, KD-55X80J, MediaTek), EU firmware
+# Android 12 (Google TV, API 31), build BRAVIA_VH2_EU-user 12 STT2.230505.001.S136 682241
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/sony-bravia-4k-vh2/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/sony-bravia-4k-vh2/debloat.txt com.google.android.apps.tv.launcherx
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Stock launcher: com.google.android.apps.tv.launcherx (Google TV). Pass it to restore.sh as above.
+# Live TV / tuner app: com.sony.dtv.tvx (set it as live_tv_package in the launcher's config.xml and hide it).
+# Keep the com.sony.dtv.tvinput.* services, com.sony.dtv.braviasync*, com.sony.dtv.tvapi,
+# com.sony.dtv.sonysystemservice, imeproxy, settingsprovider, systemupdate/update (firmware), the Sony
+# settings apps and all com.mediatek.*: they drive HDMI, the tuner, Bravia Sync, updates and the remote.
+# Kept by owner's choice: voice assistant (katniss, voicesearch, assistantadapter), Chromecast built-in
+# (mediashell) and firmware updates.
+# Already disabled at the factory: com.sony.dtv.promos, com.sony.dtv.b2b.vendorprotocol,
+# com.sony.dtv.b2b.softap, com.apple.atve.sony.appletv, the my5/itv/ard/all4/iplayer/sounds launchers,
+# com.youview.poa, de.hdplus.tvapp.androidtv, com.sony.dtv.seeds.iot, com.sonypicturescore.
+# Not in this list, so restore.sh leaves them as they are.
+#
+# Live TV in the launcher: set live_tv_package to com.sony.dtv.tvx and hide it; Inputs lists HDMI 1-4 and
+# AV from the TV input framework. Launcher installed with the Input-button service (INPUT_KEY_SERVICE=1).
+# Applied one afternoon on a KD-55X80J with the dock set to Stremio, Netflix, SmartTube, OTT Navigator.
+# Not yet lived with for weeks; if something breaks, re-enable it with `pm enable <package>` and please
+# report it. launcherx was left enabled, since Home already resolved to the new launcher once the setup
+# wizard was disabled.
+#
+# Second unit, North American firmware: build BRAVIA_VH2_M_UC-user 12 STT2.230505.001.S136 682241,
+# same board and the same build number as the EU unit above. Every package in this list is present and
+# every one disabled cleanly, but two things differ:
+#
+#  - Home handover needs the stock launcher disabled. On this firmware launcherx registers its HOME
+#    intent filter at priority=2, which outranks the preference `cmd package set-home-activity` writes:
+#    it prints Success while `resolve-activity` keeps naming launcherx. Disabling setupwraith alone did
+#    not hand Home over either, so the note above about leaving launcherx enabled does not hold here.
+#    Disabling it (the commented line at the end of this list) handed Home over at once, and the TV has
+#    booted to the new launcher since. Check with `dumpsys activity activities | grep mFocusedApp`, not
+#    with the "Success" from set-home-activity.
+#  - promos, seeds.iot and b2b.vendorprotocol ship ENABLED here, where the EU unit has them off at the
+#    factory; sonyselect and seeds.iot.remotestart are enabled too and were not named either way above.
+#    They are in the list below, so one file covers both regions: on an EU set they are already disabled
+#    and recovery.py records that, so undo leaves them alone.
+#
+# The Input-button service was NOT needed on this unit: with launcherx disabled, the remote's Input,
+# gear and app buttons were all still answered by Sony's own firmware (checked on the real remote, not
+# with injected keys), so INPUT_KEY_SERVICE was left off and key auto-repeat kept. On Ethernet, so the
+# setupwraith Wi-Fi check did not apply. Applied over one evening, not lived with for days.
+
+# ACR viewing tracker
+tv.samba.ssm                                   # Samba TV fingerprints what's on screen
+tv.samba.ssm.ui
+
+# telemetry and remote support
+com.qterics.da.product
+com.sony.dtv.da.service
+com.sonyericsson.idd.agent
+com.sony.dtv.sonybugreportsys
+com.google.android.feedback
+
+# demo / shop mode
+com.sony.dtv.demosupport
+com.sony.dtv.demosystemsupport
+com.sony.dtv.multiscreendemo
+
+# preloaded apps
+com.sony.dtv.customersupport                   # Help tile
+com.sony.dtv.smarthelp
+com.google.android.youtube.tvmusic
+com.google.android.play.games
+
+# Sony promo and IoT apps: already off at the factory on the EU unit, shipped enabled on the UC one
+com.sony.dtv.promos                            # "Freeplay" tile
+com.sony.dtv.sonyselect                        # Sony Select app promos
+com.sony.dtv.seeds.iot
+com.sony.dtv.seeds.iot.remotestart
+com.sony.dtv.b2b.vendorprotocol                # hotel/B2B control protocol
+
+# Google TV setup wizard: claims HOME and takes over once the stock launcher is disabled
+com.google.android.tungsten.setupwraith
+
+# Stock Google TV launcher. Left ENABLED on the EU unit, where Home resolved to the new launcher by
+# itself. Uncomment on UC firmware, where launcherx outranks set-home-activity at priority=2 and Home
+# stays on it otherwise. Only ever with the replacement launcher installed and claiming HOME first:
+# disable.sh's Home guard refuses it otherwise, and restore.sh puts it back.
+# com.google.android.apps.tv.launcherx

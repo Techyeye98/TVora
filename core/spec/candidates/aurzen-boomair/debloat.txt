@@ -1,0 +1,37 @@
+# DRAFT, NOT TESTED. AURZEN BOOMAIR projector (ro.product.model BOOMAIR, manufacturer SDMC, device
+# himalaya, product AURZEN_BOOMAIR), Google TV 11 (API 30), firmware RTMA.250416.043, fingerprint
+# AURZEN/AURZEN_BOOMAIR/himalaya:11/RTMA.250416.043/13549864:user/release-keys
+# Drafted for cleanyourtv-app issue #9 from the TV report in that issue. There is no AURZEN or SDMC
+# list yet, so it starts from the MediaTek Google TV lists closest to it: examples/xgimi-mogo-3-pro
+# (a MediaTek Google TV projector) and examples/aipro2k. Every line below is a package both of those
+# lists switch off and that this projector has. It is short on purpose. Nothing has been tried on a
+# BOOMAIR yet.
+#
+# Apply:   TV_HOST=<projector ip> tools/disable.sh examples/aurzen-boomair/debloat.txt
+# Undo:    TV_HOST=<projector ip> tools/restore.sh examples/aurzen-boomair/debloat.txt com.google.android.apps.tv.launcherx
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Stock launcher: com.google.android.apps.tv.launcherx. setupwraith is installed and the report
+# says it owns the saved Wi-Fi (WIZARD_WIFI), so neither is in this draft.
+#
+# Left alone (no list says what they do): every com.sdmc.* package (remotecontrolservice,
+# bluetoothconnect, bluetoothspeaker, keyburn, kt, implayer, service, sdmcfactory), com.dangs.factorytest,
+# com.dolby.android.audio.service, the MediaTek TV stack (com.mediatek.tvinput, com.mediatek.tv.service,
+# com.mediatek.wwtv.tvcenter, com.mediatek.wwtv.setupwizard, com.mediatek.tv.freeviewplay),
+# mediatek.factorymenu.ui, com.mediatek.android.leanbacklauncher.partnercustomizer, the Freeview Play apps.
+# Kept: com.google.android.katniss (voice), com.google.android.tv.remote.service (phone remote),
+# com.google.android.apps.mediashell (Chromecast), com.google.android.marvin.talkback.
+#
+# To check before this goes upstream: Wi-Fi after a restart, the remote (every key, including the
+# microphone button and focus or keystone keys if it has them), HDMI, the Bluetooth speaker mode,
+# casting.
+
+# Telemetry
+com.google.android.feedback
+
+# Preloaded apps
+com.google.android.play.games
+
+# Owner's choice: remove the # to switch off
+# fusion.android.tv.demo                    # retail demo mode (default-off on xgimi-mogo-3-pro, an ask row on aipro2k)
+# com.google.android.apps.tv.dreamx         # Google screensaver (an ask row on both)
