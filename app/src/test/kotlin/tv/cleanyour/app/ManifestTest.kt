@@ -54,13 +54,13 @@ class ManifestTest {
             android.R.attr.windowSplashScreenBackground,
         ))
         try {
-            assertEquals(0xFF0A1116.toInt(), (a.getDrawable(0) as android.graphics.drawable.ColorDrawable).color)
-            assertEquals(0xFF0A1116.toInt(), a.getColor(1, 0))
-            assertEquals(0xFF0A1116.toInt(), a.getColor(2, 0))
+            assertEquals(0xFF000000.toInt(), (a.getDrawable(0) as android.graphics.drawable.ColorDrawable).color)
+            assertEquals(0xFF000000.toInt(), a.getColor(1, 0))
+            assertEquals(0xFF000000.toInt(), a.getColor(2, 0))
             assertFalse(a.getBoolean(3, true))
             assertFalse(a.getBoolean(4, true))
             assertFalse(a.getBoolean(5, true))
-            assertEquals(0xFF0A1116.toInt(), a.getColor(6, 0))
+            assertEquals(0xFF000000.toInt(), a.getColor(6, 0))
         } finally {
             a.recycle()
         }

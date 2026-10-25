@@ -53,9 +53,6 @@ import tv.cleanyour.ui.design.component.ScreenScaffold
 import tv.cleanyour.ui.design.component.ScreenTitle
 import tv.cleanyour.ui.design.component.SheetHeader
 import tv.cleanyour.ui.design.component.SwitchRow
-import tv.cleanyour.ui.design.component.TvoraAction
-import tv.cleanyour.ui.design.component.TvoraActionGrid
-import tv.cleanyour.ui.design.component.TvoraActionCard
 import tv.cleanyour.ui.design.component.TertiaryButton
 import tv.cleanyour.ui.design.component.ThemeOption
 import tv.cleanyour.ui.design.component.ThemePicker
@@ -86,26 +83,34 @@ fun HomeScreen(state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, onB
             LiveLine(stringResource(R.string.home_applying))
             if (busy is Busy.Working) ProgressBar(busy.percent / 100f, Modifier.padding(top = 16.dp))
         }
-        Body(stringResource(R.string.home_studio_intro), Modifier.padding(top = 8.dp))
-        val theme = state.themes.firstOrNull { it.id == state.themeId }?.name ?: stringResource(R.string.theme_default)
-        val apps = state.dock.take(state.columns).joinToString(", ") { it.name }
-        TvoraActionGrid(listOf(
-            TvoraAction(stringResource(R.string.home_row_dock), apps.ifEmpty { stringResource(R.string.home_dock_hint) }, CytIcons.Cards,
-                if (busy == null) ({ dockOpen = true }) else null),
-            TvoraAction(stringResource(R.string.home_visibility), stringResource(R.string.home_visibility_hint), CytIcons.Check,
-                if (busy == null) ({ appsOpen = true }) else null),
-            TvoraAction(stringResource(R.string.home_row_look), theme, CytIcons.Home,
-                if (busy == null) ({ lookOpen = true }) else null),
-            TvoraAction(stringResource(R.string.home_buttons), stringResource(R.string.home_buttons_hint), CytIcons.Settings,
-                if (busy == null) ({ buttonsOpen = true }) else null),
-        ), Modifier.padding(top = 20.dp))
-        if (onChoosePhoto != null) TvoraActionCard(TvoraAction(
-            stringResource(if (importingPhoto) R.string.home_photo_loading else R.string.home_photo),
-            stringResource(R.string.home_photo_note), CytIcons.Tv,
-            if (busy == null) onChoosePhoto else null,
-        ), Modifier.padding(top = 12.dp).fillMaxWidth())
-        if (state.personal.photo != null) SwitchRow(stringResource(R.string.home_photo_enabled), state.personal.wallpaperEnabled != false,
-            { onIntent(HomeScreenIntent.SetPersonal(state.personal.copy(wallpaperEnabled = it))) }, enabled = busy == null)
+        ListGroup(Modifier.padding(top = 20.dp)) {
+            // The dock's apps by name, and how many more sit in the rows under it.
+            val inDock = state.dock.take(state.columns).joinToString(", ") { it.name }
+            val below = (state.dock.size - state.columns).coerceAtLeast(0)
+            val dockLine = if (below > 0) msg(R.string.home_row_dock_rows, "names" to inDock, "count" to below) else inDock
+            ListRow(stringResource(R.string.home_row_dock), subtitle = dockLine.ifEmpty { null },
+                onClick = if (busy == null) ({ dockOpen = true }) else null)
+            ListDivider()
+            val theme = state.themes.firstOrNull { it.id == state.themeId }?.name ?: stringResource(R.string.theme_default)
+            ListRow(stringResource(R.string.home_row_look), subtitle = theme, onClick = if (busy == null) ({ lookOpen = true }) else null)
+        }
+        ListGroup(Modifier.padding(top = 12.dp)) {
+            ListRow(stringResource(R.string.home_visibility), subtitle = stringResource(R.string.home_visibility_hint),
+                onClick = if (busy == null) ({ appsOpen = true }) else null)
+            ListDivider()
+            ListRow(stringResource(R.string.home_buttons), subtitle = stringResource(R.string.home_buttons_hint),
+                onClick = if (busy == null) ({ buttonsOpen = true }) else null)
+            if (onChoosePhoto != null) {
+                ListDivider()
+                ListRow(stringResource(if (importingPhoto) R.string.home_photo_loading else R.string.home_photo),
+                    subtitle = stringResource(R.string.home_photo_note), onClick = if (busy == null) onChoosePhoto else null)
+            }
+            if (state.personal.photo != null) {
+                ListDivider()
+                SwitchRow(stringResource(R.string.home_photo_enabled), state.personal.wallpaperEnabled != false,
+                    { onIntent(HomeScreenIntent.SetPersonal(state.personal.copy(wallpaperEnabled = it))) }, enabled = busy == null)
+            }
+        }
         // Launcher 2.4: Launcher settings on the TV can override what the phone sent; the phone
         // cannot read them, so the rows above show what config.json says. Launcher 2.5 also edits the
         // dock on the TV (files/order.txt, kept while dock_apps stays the same), so the note says what

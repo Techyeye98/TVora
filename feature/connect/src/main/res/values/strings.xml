@@ -24,16 +24,16 @@
 
     <!-- S1 Welcome. The overline is the product name, as on the TV launcher. -->
     <string name="welcome_overline" translatable="false">TVora</string>
-    <string name="welcome_title">Your TV.\nYour way.</string>
-    <string name="welcome_body">Make room for your favourites. Shape your home screen, clear the clutter, and keep a way back.</string>
-    <string name="welcome_hero_cd">A personalised TV home screen connected to its phone controller</string>
+    <string name="welcome_title">Your TV, tidied up.</string>
+    <string name="welcome_body">Switch off the clutter, keep the apps you use, and get a calm home screen. Five minutes. Everything can be put back.</string>
+    <string name="welcome_hero_cd">A TV home screen full of sponsored rows turns into a clean one with four apps along the bottom</string>
     <string name="welcome_looking">Looking for TVs on your Wi-Fi...</string>
     <string name="welcome_found_one">Found {name} ({room})</string>
     <string name="welcome_found_one_noroom">Found {name}</string>
     <string name="welcome_found_many">{count, plural, one {Found # TV} other {Found # TVs}}</string>
     <string name="welcome_none_yet">No TV yet. Keep going, we\'ll keep looking.</string>
-    <string name="welcome_start">Find my TV</string>
-    <string name="welcome_returning">My TVs</string>
+    <string name="welcome_start">Start</string>
+    <string name="welcome_returning">I\'ve set up a TV before</string>
 
     <!-- S1b Which TV? -->
     <string name="picker_title">Which TV?</string>

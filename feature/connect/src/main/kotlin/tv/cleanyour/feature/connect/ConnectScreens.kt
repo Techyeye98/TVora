@@ -77,9 +77,7 @@ import tv.cleanyour.ui.design.component.TitleSize
 import tv.cleanyour.ui.design.component.TvMenuArt
 import tv.cleanyour.ui.design.component.TvStatusChip
 import tv.cleanyour.ui.design.component.TvThumbnail
-import tv.cleanyour.ui.design.component.TvoraHero
-import tv.cleanyour.ui.design.component.TvoraWordmark
-import tv.cleanyour.ui.design.component.TvoraSetupSteps
+import tv.cleanyour.ui.design.component.WelcomeIllustration
 import tv.cleanyour.ui.design.component.rememberEmphasis
 import tv.cleanyour.ui.design.theme.Glow
 
@@ -134,21 +132,44 @@ fun WelcomeScreen(state: SetupState.Welcome, extras: SetupExtras, actions: Setup
         state.looking -> stringResource(R.string.welcome_looking)
         else -> stringResource(R.string.welcome_none_yet)
     }
-    ScreenScaffold(Glow.Brand, modifier, bottomBar = {
-        DiscoveryChip(line, found = found.isNotEmpty(), modifier = Modifier.padding(bottom = 14.dp))
-        ActionColumn {
-            PrimaryButton(stringResource(R.string.welcome_start), { actions.intent(SetupIntent.Start) })
-            TertiaryButton(stringResource(R.string.welcome_returning), onReturning)
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        // A short phone (the 360 x 720 dp emulator leaves about 600 dp between its bars) gets a
+        // smaller hero and tighter gaps, so the promise, the body and the live line all fit above
+        // Start in the first view, as mockup 01 shows them.
+        val density = LocalDensity.current
+        val insets = WindowInsets.safeDrawing
+        val usable = maxHeight - with(density) { (insets.getTop(density) + insets.getBottom(density)).toDp() }
+        val compact = usable < WELCOME_COMPACT_BELOW
+        ScreenScaffold(
+            Glow.Brand,
+            bottomBar = {
+                // The live discovery line is pinned with Start, the button it speaks for, so it shows
+                // before the first tap on every phone height (mockup 01: "the live status chip says
+                // the TV is found before the first tap"); pinned like S3's safety line (R4-W8 H1).
+                DiscoveryChip(line, found = found.isNotEmpty(), modifier = Modifier.padding(bottom = 14.dp))
+                ActionColumn {
+                    PrimaryButton(stringResource(R.string.welcome_start), { actions.intent(SetupIntent.Start) })
+                    TertiaryButton(stringResource(R.string.welcome_returning), onReturning)
+                }
+            },
+        ) {
+            // The product name scrolls with the hero (no top bar on Welcome), so a stop card scrolled
+            // into view never slides the film under it (R4-W8). Gaps and the 300 dp hero are the
+            // mockup's (28, 32, 40).
+            Overline(stringResource(R.string.welcome_overline), Modifier.padding(top = if (compact) 12.dp else 28.dp))
+            WelcomeIllustration(
+                Modifier.padding(top = if (compact) 16.dp else 32.dp).align(Alignment.CenterHorizontally)
+                    .widthIn(max = if (compact) 248.dp else 300.dp),
+                contentDescription = stringResource(R.string.welcome_hero_cd),
+            )
+            ScreenTitle(stringResource(R.string.welcome_title), Modifier.padding(top = if (compact) 20.dp else 40.dp), size = TitleSize.DISPLAY)
+            Lead(stringResource(R.string.welcome_body), Modifier.padding(top = 12.dp))
+            InlineCard(extras, actions)
         }
-    }) {
-        TvoraWordmark(Modifier.padding(top = 20.dp))
-        ScreenTitle(stringResource(R.string.welcome_title), Modifier.padding(top = 28.dp), size = TitleSize.DISPLAY)
-        Lead(stringResource(R.string.welcome_body), Modifier.padding(top = 14.dp))
-        TvoraHero(Modifier.padding(top = 16.dp))
-        TvoraSetupSteps(Modifier.padding(top = 16.dp, bottom = 12.dp))
-        InlineCard(extras, actions)
     }
 }
+
+private val WELCOME_COMPACT_BELOW = 680.dp
 
 @Composable
 fun displayName(tv: FoundTv): String = tv.friendlyName ?: tv.model ?: tv.host

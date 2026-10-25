@@ -44,7 +44,7 @@ data class CytType(
 private val Trim = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None)
 
 private fun outfit(size: Int, line: Int, weight: FontWeight, tracking: Double, tnum: Boolean = false, heading: Boolean = false) = TextStyle(
-    fontFamily = FontFamily.SansSerif, fontSize = size.sp, lineHeight = line.sp, fontWeight = weight,
+    fontFamily = Outfit, fontSize = size.sp, lineHeight = line.sp, fontWeight = weight,
     letterSpacing = tracking.sp, lineHeightStyle = Trim,
     fontFeatureSettings = if (tnum) "tnum" else null,
     // Titles wrap into balanced lines ("things to / switch off"), never truncate.
@@ -52,9 +52,9 @@ private fun outfit(size: Int, line: Int, weight: FontWeight, tracking: Double, t
 )
 
 val DefaultCytType = CytType(
-    display = outfit(40, 44, FontWeight.Bold, -1.2, heading = true),
-    headline = outfit(30, 36, FontWeight.Bold, -0.7, heading = true),
-    titleLarge = outfit(22, 28, FontWeight.SemiBold, 0.0),
+    display = outfit(40, 46, FontWeight.Light, -0.5, heading = true),
+    headline = outfit(30, 36, FontWeight.Light, -0.25, heading = true),
+    titleLarge = outfit(22, 28, FontWeight.Normal, 0.0),
     titleMedium = outfit(17, 24, FontWeight.Medium, 0.0),
     bodyLarge = outfit(16, 24, FontWeight.Normal, 0.0),
     bodyMedium = outfit(14, 20, FontWeight.Normal, 0.1),
@@ -62,7 +62,7 @@ val DefaultCytType = CytType(
     labelLarge = outfit(16, 20, FontWeight.Medium, 0.1),
     labelMedium = outfit(13, 16, FontWeight.Medium, 0.2),
     overline = outfit(11, 16, FontWeight.Medium, 2.0),
-    numeral = outfit(64, 68, FontWeight.SemiBold, -1.0, tnum = true),
+    numeral = outfit(64, 64, FontWeight.ExtraLight, -1.0, tnum = true),
     mono = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp, lineHeight = 18.sp),
 )
 

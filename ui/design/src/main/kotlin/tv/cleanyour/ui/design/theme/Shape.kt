@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 // large 28 dp (sheet top corners, hero cards).
 @Immutable
 data class CytShapes(
-    val pill: RoundedCornerShape = RoundedCornerShape(18.dp),
+    val pill: RoundedCornerShape = RoundedCornerShape(percent = 50),
     val small: RoundedCornerShape = RoundedCornerShape(12.dp),
     val row: RoundedCornerShape = RoundedCornerShape(16.dp),
     val medium: RoundedCornerShape = RoundedCornerShape(20.dp),

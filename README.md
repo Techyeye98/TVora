@@ -10,7 +10,7 @@ to run the app. TV permissions and debugging authorization are always granted by
 
 ## Make it yours
 
-- **Home studio:** select apps and arrange the dock and the rows below it.
+- **Home screen:** select apps and arrange the dock and the rows below it.
 - **Show or hide apps:** change Home visibility without uninstalling an app. Showing an app again
   restores its saved place, unless you changed its saved order in between.
 - **Your wallpaper:** choose a photo from your phone. TVora makes a bounded, metadata-stripped JPEG
@@ -19,8 +19,9 @@ to run the app. TV permissions and debugging authorization are always granted by
 - **Cleanup with recovery:** review the plan, save a restore point, disable supported packages and
   put them back individually or restore the supported previous setup.
 - **Connect from the phone:** legacy network ADB and experimental pairing-code/TLS support.
-- **TVora design:** graphite and mint, original vector icon/illustration, solid cards, a device
-  dashboard and an accessible Home studio. Large text switches action grids to a single column.
+- **Interface:** preserves the upstream Outfit typography, glass surfaces, ambient glow,
+  animated TV illustration and interaction motion. TVora's extra controls use the same list rows
+  and sheets. App identity is TVora; the launcher icon is provisional.
 
 The bundled TV launcher retains the original black background and app-colour glow by default.
 Changing the phone app's appearance does not change a TV until its owner applies a setting.

@@ -53,12 +53,12 @@ class WelcomeFoldTest {
     @Test fun foundLineIsInTheFirstView() {
         welcome(SetupState.Welcome(listOf(miTv), onWifi = true, looking = false), 600)
         compose.onNodeWithText("Found Mi TV 4A").assertIsDisplayed()
-        compose.onNodeWithText("Find my TV").assertIsDisplayed()
+        compose.onNodeWithText("Start").assertIsDisplayed()
         // The promise and its body fit above the pinned bar too (mockup 01), and Welcome has the
         // mockup's two actions only: address entry lives on S1b, the not-found card and the door.
-        compose.onNodeWithText("Your TV.\nYour way.").assertIsDisplayed()
-        compose.onNodeWithText("Make room for your favourites.", substring = true).assertIsDisplayed()
-        compose.onNodeWithText("My TVs").assertIsDisplayed()
+        compose.onNodeWithText("Your TV, tidied up.").assertIsDisplayed()
+        compose.onNodeWithText("Switch off the clutter", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("I've set up a TV before").assertIsDisplayed()
         compose.onNodeWithText("Enter the TV's address").assertDoesNotExist()
     }
 

@@ -50,7 +50,7 @@ fun CytTopBar(
         Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
             if (onBack != null) CytIconButton(CytIcons.Back, stringResource(R.string.cyt_back), onBack)
         }
-        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { if (center != null) center() else TvoraWordmark() }
+        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { center?.invoke() }
         Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) { trailing?.invoke() }
     }
 }
@@ -72,7 +72,7 @@ fun ScreenScaffold(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val c = CytTheme.colors
-    BoxWithConstraints(modifier.fillMaxSize().background(c.bg)) {
+    BoxWithConstraints(modifier.fillMaxSize().background(c.bg).animatedAmbientGlow(glow)) {
         val gutter = CytSpacing.gutterFor(maxWidth)
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             topBar()

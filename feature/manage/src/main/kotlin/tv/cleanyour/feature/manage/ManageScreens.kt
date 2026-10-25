@@ -75,10 +75,7 @@ import tv.cleanyour.ui.design.component.StepCard
 import tv.cleanyour.ui.design.component.StopCard
 import tv.cleanyour.ui.design.component.SwitchRow
 import tv.cleanyour.ui.design.component.TertiaryButton
-import tv.cleanyour.ui.design.component.TvoraDeviceCard
-import tv.cleanyour.ui.design.component.TvoraWordmark
-import tv.cleanyour.ui.design.component.TvoraAction
-import tv.cleanyour.ui.design.component.TvoraActionGrid
+import tv.cleanyour.ui.design.component.TvCard
 import tv.cleanyour.ui.design.component.TvStatus
 import tv.cleanyour.ui.design.component.TvStatusChip
 import tv.cleanyour.ui.design.icon.CytIcons
@@ -105,8 +102,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             trailing = { CytIconButton(CytIcons.Settings, stringResource(R.string.manage_settings_cd), { onIntent(ManageIntent.AppSettings) }) },
         )
     }) {
-        TvoraWordmark(Modifier.padding(top = 8.dp))
-        ScreenTitle(stringResource(R.string.manage_title), Modifier.padding(top = 24.dp))
+        ScreenTitle(stringResource(R.string.manage_title), titleTop)
         if (state.offline) {
             Banner(
                 stringResource(R.string.manage_offline_banner), BannerTone.NEUTRAL, Modifier.padding(top = 16.dp), icon = CytIcons.WifiOff,
@@ -118,14 +114,14 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             val room = tv.room
             val stateWord = stringResource(if (tv.clean) R.string.manage_state_clean else R.string.manage_state_original)
             val checked = msg(R.string.manage_checked, "date" to shortDate(tv.checkedAtMs, locale))
-            TvoraDeviceCard(
+            TvCard(
                 name = if (room != null) msg(R.string.manage_tv_title, "tv" to tv.name, "room" to room) else msg(R.string.manage_tv_title_noroom, "tv" to tv.name),
-                status = "$stateWord. $checked.",
+                statusLine = "$stateWord. $checked.",
                 thumbnail = rememberPng(tv.thumbnail),
-                description = msg(R.string.manage_thumbnail_cd, "tv" to tv.name),
+                thumbnailDescription = msg(R.string.manage_thumbnail_cd, "tv" to tv.name),
                 modifier = Modifier.padding(top = 20.dp),
                 level = stringResource(if (tv.level == Level.CUSTOM) R.string.manage_level_custom else R.string.manage_level_simple),
-                onRefresh = { onIntent(ManageIntent.RefreshThumbnail) },
+                onClick = { onIntent(ManageIntent.RefreshThumbnail) },
             )
             // Navigation into the wizard, whose own "Make it clean" is the guarded action (R5-W8 O1).
             if (!tv.clean) PrimaryButton(stringResource(R.string.manage_clean_again), { onIntent(ManageIntent.CleanAgain) }, Modifier.padding(top = 16.dp), guardObscured = false)
@@ -134,22 +130,26 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 Banner(stringResource(R.string.manage_help_add_tv_banner), BannerTone.INFO, Modifier.padding(top = 16.dp),
                     actionLabel = stringResource(R.string.manage_help_add_tv), onAction = { onIntent(ManageIntent.HelpAddTv) })
             }
-            TvoraActionGrid(listOf(
-                TvoraAction(stringResource(R.string.manage_row_home), stringResource(R.string.manage_home_hint), CytIcons.Home,
-                    { onIntent(ManageIntent.Open(ManageSection.HOME_SCREEN)) }),
-                TvoraAction(msg(R.string.manage_row_switched_off, "count" to tv.switchedOff), stringResource(R.string.manage_row_switched_off_sub), CytIcons.Cards,
-                    { onIntent(ManageIntent.Open(ManageSection.SWITCHED_OFF)) }),
-                TvoraAction(stringResource(R.string.manage_row_leftovers), stringResource(R.string.manage_row_leftovers_sub), CytIcons.Refresh,
-                    { onIntent(ManageIntent.Open(ManageSection.LEFTOVERS)) }),
-                TvoraAction(stringResource(R.string.manage_row_restore), tv.restorePointAtMs?.let { shortDateTime(it, locale) }
-                    ?: stringResource(R.string.manage_restore_hint), CytIcons.Undo,
-                    { onIntent(ManageIntent.Open(ManageSection.RESTORE_POINT)) }),
-            ), Modifier.padding(top = 16.dp))
             ListGroup(Modifier.padding(top = 16.dp)) {
+                // 0.3.3 D2: without the new home screen there is no dock to name; the row opens the reason.
+                ListRow(stringResource(R.string.manage_row_home),
+                    subtitle = if (tv.ownHome) stringResource(R.string.manage_row_home_own) else tv.dockNames.joinToString(", ").ifEmpty { null },
+                    onClick = { onIntent(ManageIntent.Open(ManageSection.HOME_SCREEN)) })
+                ListDivider()
+                // STORES-PLAN 1: the Play build has no add-ons, so no row that leads to them.
                 if (state.addOns) {
                     ListRow(stringResource(R.string.manage_row_cards), onClick = { onIntent(ManageIntent.Open(ManageSection.MODULES)) })
                     ListDivider()
                 }
+                ListRow(msg(R.string.manage_row_switched_off, "count" to tv.switchedOff), subtitle = stringResource(R.string.manage_row_switched_off_sub),
+                    onClick = { onIntent(ManageIntent.Open(ManageSection.SWITCHED_OFF)) })
+                ListDivider()
+                ListRow(stringResource(R.string.manage_row_leftovers), subtitle = stringResource(R.string.manage_row_leftovers_sub),
+                    onClick = { onIntent(ManageIntent.Open(ManageSection.LEFTOVERS)) })
+                ListDivider()
+                ListRow(stringResource(R.string.manage_row_restore), subtitle = tv.restorePointAtMs?.let { msg(R.string.manage_row_restore_sub, "date" to shortDateTime(it, locale)) },
+                    onClick = { onIntent(ManageIntent.Open(ManageSection.RESTORE_POINT)) })
+                ListDivider()
                 ListRow(stringResource(R.string.manage_row_tvsettings), onClick = { onIntent(ManageIntent.Open(ManageSection.TV_SETTINGS)) })
             }
         }
