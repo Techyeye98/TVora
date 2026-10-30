@@ -2,10 +2,17 @@
 <h1 align="center">TVora</h1>
 <p align="center"><strong>Your TV. Your way.</strong><br>Clean up and personalise your Android TV from your phone.</p>
 
-> Initial release. Native TLS pairing remains experimental. Restore checks use simulated TVs;
-> compatibility and recovery on each physical TV still need owner verification.
+<p align="center">
+  <a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.0.apk"><img src="https://img.shields.io/badge/Download_TVora_APK-Android-20883D?style=for-the-badge&logo=android&logoColor=white" alt="Download TVora APK for Android"></a>
+</p>
+<p align="center"><strong><a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.0.apk">Download APK directly</a></strong> · <a href="https://github.com/Techyeye98/TVora/releases/latest">Release notes</a><br>Free · Android 9+ phone · No account or subscription needed</p>
 
-[Download TVora 0.1.0](https://github.com/Techyeye98/TVora/releases/tag/v0.1.0)
+**New to GitHub?** Tap **Download TVora APK** above on your Android phone. Open the downloaded
+APK and, if Android asks, allow installation from your browser or file manager. Install TVora,
+then connect your phone and TV to the same Wi-Fi. You do not need a GitHub account.
+
+Used on the maintainer's Mi TV, with positive feedback from users on their setups.
+See the setup instructions below to get started.
 
 TVora helps you choose the apps you see, arrange your Home screen, add your own wallpaper and
 reduce TV clutter with a recovery path. No ChatGPT account, coding agent or subscription is needed
@@ -41,7 +48,7 @@ Changing the phone app's appearance does not change a TV until its owner applies
 </p>
 
 Screenshots in `docs/screenshots` are captured from the actual Compose UI with Robolectric, not
-marketing mockups. Hardware display differences and connection flows still need device testing.
+marketing mockups. Appearance can vary with your phone and TV.
 
 ## Try it
 
@@ -57,7 +64,7 @@ Save a copy of the recovery scripts outside the app. Finish closes debugging unl
 to keep it on; enable it again for a later management session.
 
 Some TVs support cleanup only and keep their own launcher. Manufacturer, firmware and Android
-version restrictions are enforced by the inherited planner; TVora does not promise every TV.
+version determine the available features.
 Samsung Tizen and LG webOS are not supported.
 
 ## Build
@@ -83,13 +90,17 @@ repository and release signing policy are established.
 The optional full build can install add-ons from the inherited signed index. The Play flavour
 omits add-on downloads. Neither flavour turns off TV software updaters in this preview.
 
-## Tests and current limits
+## Testing and compatibility
 
 See [Restore verification](docs/RESTORE-VERIFICATION.md) for recovery coverage and limits.
 
-Core operation, state-machine and authenticated packet/AEAD tests run locally. The PAKE exchange
-is replaced by an agreed-secret test double in JVM protocol tests. Native SPAKE2, Android Keystore,
-TLS pairing, headphones and full cleanup/restore still need real phone/TV validation.
+TVora has been used on the maintainer's Mi TV, and users have reported successful use on their
+setups. Automated checks cover core operations, state machines and recovery scenarios.
+
+Modern pairing-code/TLS support remains experimental. A full restore-and-return test on the
+maintainer's physical TV is still pending; automated restore verification is documented above.
+The detailed protocol tests use an agreed-secret test double for PAKE; they do not validate the
+native SPAKE2 exchange or Android Keystore on every device.
 
 Focused TVora screenshots cover onboarding, dashboard, Home screen and large text. Older upstream
 goldens remain as reference; they are not a visual baseline for the redesign. Record current
@@ -116,5 +127,4 @@ Conscrypt and the adapted pairing cipher are Apache-2.0. See [THIRD-PARTY-NOTICE
 [LICENSE](LICENSE), and `third_party_sources` for corresponding pairing-library source archives.
 
 See [PRIVACY.md](PRIVACY.md) for local data handling and [TV-STUDIO.md](TV-STUDIO.md) for the initial
-implementation record. This repository is prepared for the owner's GitHub repository; no release
-has been published or installed on a real device during this redesign.
+implementation record. Download the current APK from [TVora releases](https://github.com/Techyeye98/TVora/releases/latest).
