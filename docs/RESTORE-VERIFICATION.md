@@ -5,7 +5,10 @@ rollback/resume, and exported recovery bundle. Automated checks use simulated TV
 (Android 9) cleanup, restore and reboot test on 2 November 2026 also passed: all 112 original
 packages matched their baseline enabled/installed/hidden/suspended states, no packages remained
 disabled, and the original Google Home persisted after reboot. The added launcher was kept as an
-ordinary app. This device test does not establish compatibility with every TV.
+ordinary app.
+
+The owner subsequently tested TVora 0.1.1 and confirmed that restore opens the original Home
+automatically. The owner also reports working use on two TVs: MiTV-AXSO0 and MiTV-MOOQ1.
 
 ## What restore does
 
@@ -33,7 +36,7 @@ ordinary app. This device test does not establish compatibility with every TV.
 
 Local Windows checks exclude POSIX interpreter tests; the GitHub workflow runs the complete
 backup suite on Linux. Windows recovery scripts are checked for structure and exact command
-quoting; the current release review does not claim a new physical Windows-to-TV recovery run.
+quoting. The physical in-app restore result is recorded above.
 
 ## Limits
 

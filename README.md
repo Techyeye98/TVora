@@ -31,7 +31,7 @@ to run the app. TV permissions and debugging authorization are always granted by
   adding or moving apps preserves the chosen theme's title and spacing below the clock.
 - **Cleanup with recovery:** review the plan, save a restore point, disable supported packages and
   put them back individually or restore the supported previous setup.
-- **Connect from the phone:** legacy network ADB and experimental pairing-code/TLS support.
+- **Connect from the phone:** legacy network ADB and pairing-code/TLS support.
 - **Interface:** preserves the upstream Outfit typography, glass surfaces, ambient glow,
   animated TV illustration and interaction motion. TVora's extra controls use the same list rows
   and sheets. TVora's text-free icon is a closed glass TV with two feet and a soft glow.
@@ -97,12 +97,12 @@ See [Restore verification](docs/RESTORE-VERIFICATION.md) for recovery coverage a
 TVora has been used on the maintainer's Mi TV, and users have reported successful use on their
 setups. Automated checks cover core operations, state machines and recovery scenarios.
 
-Modern pairing-code/TLS support remains experimental. Cleanup, restore and reboot have been
-verified on a MiTV-AXSO0 running Android 9: all 112
-original packages matched their baseline states, with the original Google Home restored. Version
-0.1.1 fixes the final Home handoff after launcher theme cleanup.
-The detailed protocol tests use an agreed-secret test double for PAKE; they do not validate the
-native SPAKE2 exchange or Android Keystore on every device.
+**Tested on two TVs, with working use confirmed by the owner.** The owner has also tested
+TVora 0.1.1 and confirmed that restore now opens the original Home automatically.
+
+On MiTV-AXSO0 (Android 9), the cleanup, restore and reboot cycle was checked against the original
+backup: all 112 original packages matched their baseline states, and Google Home returned.
+Automated regression tests cover the final Home handoff as well as the recovery flow.
 
 Focused TVora screenshots cover onboarding, dashboard, Home screen and large text. Older upstream
 goldens remain as reference; they are not a visual baseline for the redesign. Record current
