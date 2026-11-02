@@ -134,7 +134,7 @@ class SetupLookTest {
         val changes = p.steps.filter { isChange(it.op) }.map { ChangeRecord(p.id, it.index, it.op, it.prior, Samples.NOW_MS + it.index) }
         val after = snapshot(disabled = debloatList.map { it.value }.toSet() + stock.pkg.value, home = launcher, claimants = listOf(launcher, stock), extra = mapOf(installedLauncher()))
         val undo = ops(plan(PlanRequest.UndoEverything(changes, removeLauncher = false), after, changes))
-        assertEquals(listOf(Op.RemoveFile(OverlayTransport.CONFIG), Op.RestartHome(launcher)), undo.takeLast(2))
+        assertEquals(listOf(Op.RemoveFile(OverlayTransport.CONFIG), Op.RestartHome(launcher), Op.StartActivity(stock, wait = true)), undo.takeLast(3))
         assertTrue(Op.RemoveFile(OverlayTransport.WALLPAPER) !in undo, undo.toString())
         assertTrue(undo.indexOf(Op.SetHome(stock)) < undo.indexOf(Op.RemoveFile(OverlayTransport.CONFIG)))
         val gone = ops(plan(PlanRequest.UndoEverything(changes, removeLauncher = true), after, changes))

@@ -1,8 +1,11 @@
-# Restore verification — TVora 0.1.0
+# Restore verification — TVora 0.1.1
 
 The release review covers the recorded-change restore path, planner, execution journal,
-rollback/resume, and exported recovery bundle. Automated checks use simulated TVs; they do
-not prove recovery on a physical TV or a particular manufacturer's firmware.
+rollback/resume, and exported recovery bundle. Automated checks use simulated TVs. A physical MiTV-AXSO0
+(Android 9) cleanup, restore and reboot test on 2 November 2026 also passed: all 112 original
+packages matched their baseline enabled/installed/hidden/suspended states, no packages remained
+disabled, and the original Google Home persisted after reboot. The added launcher was kept as an
+ordinary app. This device test does not establish compatibility with every TV.
 
 ## What restore does
 
@@ -47,3 +50,12 @@ quoting; the current release review does not claim a new physical Windows-to-TV 
 The 0.1.0 review found and fixed a status-reporting defect: the restore flow formerly treated any
 finished run as successful, even when steps were skipped. Success now requires COMPLETED with
 no skipped steps; incomplete recovery displays a warning and allows a fresh restore preview.
+
+## 0.1.1: finish on the restored Home
+
+The physical test exposed a handoff bug: the original Home became default, but removing the
+new launcher's config restarted that launcher and left it visible. The undo plan now opens the
+recorded original Home as its final operation, after file cleanup and accessibility restoration.
+This also works when the original Home is already default, including a repeated restore. Unknown
+original Homes are not launched. A failed final launch is recorded as an incomplete restore.
+Regression tests cover kept/removed launchers, cleanup ordering and the already-restored case.

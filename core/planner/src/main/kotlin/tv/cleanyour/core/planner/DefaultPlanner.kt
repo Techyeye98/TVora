@@ -708,6 +708,10 @@ class DefaultPlanner(
                 step(Op.RestartHome(launcher), null, GROUP_UNDO, "Restarting the home screen", FailurePolicy.CONTINUE)
                 restoreAccessibility(GROUP_UNDO)
             }
+            // Clearing the look restarts our launcher; finish on the original Home, even on a retry.
+            if (originalHome != null && originalHome != launcher) {
+                step(Op.StartActivity(originalHome, wait = true), null, GROUP_UNDO, "Showing the TV's original home screen", FailurePolicy.CONTINUE)
+            }
         }
 
         fun beforeFactoryReset() {

@@ -357,14 +357,31 @@ class PlannerTest {
             Op.SettingsPut(SettingKey.SCREENSAVER_ENABLED, "1"),
             Op.SetHome(stock), Op.VerifyHome(stock), Op.PressHome,
             Op.RemoveFile(RemotePath(RemoteDir.OVERLAY, listOf("config.json"))), Op.RestartHome(launcher),
+            Op.StartActivity(stock, wait = true),
         ), ops(p))
         assertEquals(PlanKind.UNDO_EVERYTHING, p.kind)
         val gone = plan(PlanRequest.UndoEverything(changes, removeLauncher = true), now)
         assertTrue(Op.Uninstall(launcher.pkg) in ops(gone))
         assertTrue(ops(gone).none { it is Op.RemoveFile || it is Op.RestartHome })
         assertTrue(ops(gone).indexOf(Op.SetHome(stock)) < ops(gone).indexOf(Op.Uninstall(launcher.pkg)))
+        assertEquals(Op.StartActivity(stock, wait = true), ops(gone).last())
         // Already undone: nothing to do.
         assertEquals(emptyList<Op>(), ops(plan(PlanRequest.UndoEverything(changes.take(1), false), snapshot())))
+    }
+
+    @Test fun undoEverythingShowsOriginalHomeEvenWhenItIsAlreadyDefault() {
+        val changes = listOf(change(0, Op.SetHome(launcher), Prior(home = stock)))
+        val p = plan(PlanRequest.UndoEverything(changes, removeLauncher = false), snapshot())
+        assertEquals(listOf(Op.StartActivity(stock, wait = true)), ops(p))
+        assertEquals(FailurePolicy.CONTINUE, p.steps.last().onFailure)
+        assertEquals(listOf("'am' 'start' '-W' '-n' '${stock.flat}'"), p.steps.last().rendered.lines.map { it.text })
+    }
+
+    @Test fun undoEverythingDoesNotOpenAnUnknownOrOriginalCustomHome() {
+        for (home in listOf(null, launcher)) {
+            val changes = listOf(change(0, Op.SetHome(launcher), Prior(home = home)))
+            assertTrue(ops(plan(PlanRequest.UndoEverything(changes, false), snapshot())).none { it is Op.StartActivity })
+        }
     }
 
     @Test fun debugOffAndRestorePoint() {
@@ -445,7 +462,7 @@ class PlannerTest {
         )
         val now = snapshot(disabled = setOf(stock.pkg.value), home = launcher, claimants = listOf(launcher, stock), extra = mapOf(installedLauncher()))
         val p = plan(PlanRequest.UndoEverything(changes, removeLauncher = false), now)
-        assertEquals(listOf(Op.DefaultState(stock.pkg), Op.SetHome(stock), Op.VerifyHome(stock), Op.PressHome), ops(p))
+        assertEquals(listOf(Op.DefaultState(stock.pkg), Op.SetHome(stock), Op.VerifyHome(stock), Op.PressHome, Op.StartActivity(stock, wait = true)), ops(p))
     }
 
     // RFC-W8-5 and R1 R-1.

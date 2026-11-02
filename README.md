@@ -3,9 +3,9 @@
 <p align="center"><strong>Your TV. Your way.</strong><br>Clean up and personalise your Android TV from your phone.</p>
 
 <p align="center">
-  <a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.0.apk"><img src="https://img.shields.io/badge/Download_TVora_APK-Android-20883D?style=for-the-badge&logo=android&logoColor=white" alt="Download TVora APK for Android"></a>
+  <a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.1.apk"><img src="https://img.shields.io/badge/Download_TVora_APK-Android-20883D?style=for-the-badge&logo=android&logoColor=white" alt="Download TVora APK for Android"></a>
 </p>
-<p align="center"><strong><a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.0.apk">Download APK directly</a></strong> · <a href="https://github.com/Techyeye98/TVora/releases/latest">Release notes</a><br>Free · Android 9+ phone · No account or subscription needed</p>
+<p align="center"><strong><a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.1.apk">Download APK directly</a></strong> · <a href="https://github.com/Techyeye98/TVora/releases/latest">Release notes</a><br>Free · Android 9+ phone · No account or subscription needed</p>
 
 **New to GitHub?** Tap **Download TVora APK** above on your Android phone. Open the downloaded
 APK and, if Android asks, allow installation from your browser or file manager. Install TVora,
@@ -97,8 +97,10 @@ See [Restore verification](docs/RESTORE-VERIFICATION.md) for recovery coverage a
 TVora has been used on the maintainer's Mi TV, and users have reported successful use on their
 setups. Automated checks cover core operations, state machines and recovery scenarios.
 
-Modern pairing-code/TLS support remains experimental. A full restore-and-return test on the
-maintainer's physical TV is still pending; automated restore verification is documented above.
+Modern pairing-code/TLS support remains experimental. Cleanup, restore and reboot have been
+verified on a MiTV-AXSO0 running Android 9: all 112
+original packages matched their baseline states, with the original Google Home restored. Version
+0.1.1 fixes the final Home handoff after launcher theme cleanup.
 The detailed protocol tests use an agreed-secret test double for PAKE; they do not validate the
 native SPAKE2 exchange or Android Keystore on every device.
 
