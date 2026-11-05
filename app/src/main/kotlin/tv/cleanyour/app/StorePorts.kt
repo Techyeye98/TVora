@@ -8,7 +8,7 @@ import tv.cleanyour.core.registry.HttpFetcher
 // The ports that differ between the two store builds (STORES-PLAN 1). Each flavour's source set
 // defines the object `Store` with them, and AppGraph wires it; nothing else in the app knows which
 // build it is.
-//   app/src/full  GitHub and F-Droid: the GitHub hosts, the update check, the add-on downloads.
+//   app/src/full  GitHub and F-Droid: TVora release checks; cards/modules are disabled.
 //   app/src/play  Google Play: no host, no update check (Play updates the app), no add-on downloads
 //                 (Play allows no app downloads from outside Play), and the TV's software updaters
 //                 always stay on (the "updates go off" choice does not exist).

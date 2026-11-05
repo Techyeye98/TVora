@@ -3,9 +3,9 @@
 <p align="center"><strong>Your TV. Your way.</strong><br>Clean up and personalise your Android TV from your phone.</p>
 
 <p align="center">
-  <a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.1.apk"><img src="https://img.shields.io/badge/Download_TVora_APK-Android-20883D?style=for-the-badge&logo=android&logoColor=white" alt="Download TVora APK for Android"></a>
+  <a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.2.apk"><img src="https://img.shields.io/badge/Download_TVora_APK-Android-20883D?style=for-the-badge&logo=android&logoColor=white" alt="Download TVora APK for Android"></a>
 </p>
-<p align="center"><strong><a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.1.apk">Download APK directly</a></strong> · <a href="https://github.com/Techyeye98/TVora/releases/latest">Release notes</a><br>Free · Android 9+ phone · No account or subscription needed</p>
+<p align="center"><strong><a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.2.apk">Download APK directly</a></strong> · <a href="https://github.com/Techyeye98/TVora/releases/latest">Release notes</a><br>Free · Android 9+ phone · No account or subscription needed</p>
 
 **New to GitHub?** Tap **Download TVora APK** above on your Android phone. Open the downloaded
 APK and, if Android asks, allow installation from your browser or file manager. Install TVora,
@@ -57,7 +57,7 @@ Enable TV debugging, select the TV and approve the phone on the TV. For modern W
 use the TV's six-digit pairing code, pairing port and its separate connection port.
 
 Review the plan before **Make it clean**. Use **Home screen** for appearance and app placement.
-For an existing TV, after updating TVora open **Home screen â†’ Quick buttons**, leave
+For an existing TV, after updating TVora open **Home screen → Quick buttons**, leave
 **Arrange apps on TV** on and tap **Done**. This sends the new button and reapplies the theme's
 dock spacing. More apps remain below the dock and are reached with Down on the remote.
 Save a copy of the recovery scripts outside the app. Finish closes debugging unless you chose
@@ -82,13 +82,13 @@ Debug APK: `app/build/outputs/apk/full/debug/app-full-debug.apk`.
 Application ID: `dev.tvora.app`. Code namespaces remain `tv.cleanyour.*` for maintainable upstream
 integration; the installed app identity and public branding are TVora.
 
-`assembleFullRelease` creates an optimized unsigned APK unless you configure your own signing.
-Never commit signing keys. Local preview APKs use a development certificate and are not a store
-release. TVora has no upstream app-update feed; its own update feed can be connected after the
-repository and release signing policy are established.
+Published APKs are signed with TVora's existing signing identity so updates preserve app data.
+`assembleFullRelease` is unsigned unless local signing is configured; see [release signing](docs/RELEASING.md).
+The app checks TVora's GitHub releases and opens the release page when an update is available.
 
-The optional full build can install add-ons from the inherited signed index. The Play flavour
-omits add-on downloads. Neither flavour turns off TV software updaters in this preview.
+Cards and modules are disabled. The Play flavour uses store-managed updates; neither flavour
+turns off TV software updaters. Settings includes GitHub support and [Telegram contact](https://t.me/Techyeye).
+Made by **Namya Mehta**.
 
 ## Testing and compatibility
 

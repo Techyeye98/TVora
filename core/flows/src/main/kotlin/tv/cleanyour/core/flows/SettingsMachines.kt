@@ -117,6 +117,8 @@ sealed interface AppSettingsIntent {
     data class SetHaptics(val on: Boolean) : AppSettingsIntent
     data class SetLargeText(val on: Boolean) : AppSettingsIntent
     data object CheckUpdates : AppSettingsIntent
+    data object SupportRepository : AppSettingsIntent
+    data object ContactDeveloper : AppSettingsIntent
     data object ReportProblem : AppSettingsIntent     // 0.3.2 B2: the report preview, its own screen
     data class Ask(val what: AppConfirm) : AppSettingsIntent
     data object CancelConfirm : AppSettingsIntent
@@ -177,6 +179,8 @@ class AppSettingsMachine(
                 val v = attempt { d.updates.latestNewerThan(d.appVersion) }.getOrNull()
                 send(Update(when { v == null -> UpdateCheck.Failed; v.isEmpty() -> UpdateCheck.Latest; else -> UpdateCheck.Available(v) }))
             }
+            AppSettingsIntent.SupportRepository -> effect(ManageEffect.OpenUrl(ProjectLinks.REPOSITORY))
+            AppSettingsIntent.ContactDeveloper -> effect(ManageEffect.OpenUrl(ProjectLinks.TELEGRAM))
             AppSettingsIntent.ReportProblem -> effect(ManageEffect.Navigate("report/problem"))
             AppSettingsIntent.ResetKey -> if (!before.working) scope.launch { resetKey() }
             AppSettingsIntent.DeleteEverything -> if (!before.working) scope.launch { deleteEverything() }

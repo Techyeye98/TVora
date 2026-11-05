@@ -103,6 +103,11 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
         )
     }) {
         ScreenTitle(stringResource(R.string.manage_title), titleTop)
+        (state.update as? UpdateCheck.Available)?.let { update ->
+            Banner(msg(R.string.appsettings_update_available, "version" to update.version), BannerTone.INFO,
+                Modifier.padding(top = 16.dp), actionLabel = stringResource(R.string.appsettings_update_open),
+                onAction = { onIntent(ManageIntent.OpenRelease) })
+        }
         if (state.offline) {
             Banner(
                 stringResource(R.string.manage_offline_banner), BannerTone.NEUTRAL, Modifier.padding(top = 16.dp), icon = CytIcons.WifiOff,
@@ -372,6 +377,16 @@ fun AppSettingsScreen(state: AppSettingsState, onIntent: (AppSettingsIntent) -> 
             ListDivider()
             SwitchRow(stringResource(R.string.appsettings_haptics), state.prefs.haptics, { onIntent(AppSettingsIntent.SetHaptics(it)) },
                 subtitle = stringResource(R.string.appsettings_haptics_note))
+        }
+
+        ListGroup(Modifier.padding(top = 16.dp)) {
+            ListRow(stringResource(R.string.tvora_star_repository), subtitle = stringResource(R.string.tvora_star_note),
+                onClick = { onIntent(AppSettingsIntent.SupportRepository) })
+            ListDivider()
+            ListRow(stringResource(R.string.tvora_made_by))
+            ListDivider()
+            ListRow(stringResource(R.string.tvora_contact), subtitle = stringResource(R.string.tvora_telegram),
+                onClick = { onIntent(AppSettingsIntent.ContactDeveloper) })
         }
         SectionLabel(stringResource(R.string.appsettings_about))
         ListGroup {

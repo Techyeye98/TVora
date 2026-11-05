@@ -17,20 +17,18 @@ import kotlin.test.*
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], application = Application::class)
 class FullStoreTest {
-    @Test fun tvoraDoesNotContactTheUpstreamAppUpdateFeed() = runBlocking {
-        val http = object : HttpFetcher {
-            override suspend fun get(url: String, etag: String?, rangeFrom: Long?): HttpResponse = error("No update request expected")
-        }
-        assertNull(Store.updateChecker(http).latestNewerThan("0.1.0-preview01"))
-        assertNull(Store.releasePage)
-        assertFalse(Store.rules.updateCheck)
+    @Test fun tvoraUsesItsOwnReleasePageAndDisablesModules() {
+        assertEquals("https://github.com/Techyeye98/TVora/releases/latest", Store.releasePage)
+        assertTrue(Store.rules.updateCheck)
+        assertFalse(Store.rules.addOns)
+        Store.addOnFetcher { error("Module fetcher must not be constructed") }
     }
 
     @Test fun tvoraKeepsTvSoftwareUpdatesOn() {
         val context = ApplicationProvider.getApplicationContext<Application>()
         val graph = AppGraph(context)
         try {
-            assertEquals(StoreRules.FULL.copy(updateCheck = false, updatesOff = false), graph.manageDeps.store)
+            assertEquals(StoreRules.FULL.copy(addOns = false, updatesOff = false), graph.manageDeps.store)
             val ota = PackageName("com.mitv.ota")
             val on = PackageState(EnabledState.ENABLED, true, 1, null, false, false, null, false)
             val snap = Samples.snapshot(packages = Samples.miTvPackages(emptySet()) + (ota to on))

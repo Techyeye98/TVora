@@ -4,7 +4,7 @@ TVora has no account, analytics, advertising or developer-operated server. TV da
 records stay in the app's private phone storage unless the owner exports or shares them.
 
 The app discovers and connects to the selected TV on the local network using legacy ADB or
-experimental TLS wireless debugging. TV authorization remains under the owner's control.
+TLS wireless debugging. TV authorization remains under the owner's control.
 Pairing codes are used for the current exchange and are not saved. The TLS identity is in Android
 Keystore. Reset my key clears both legacy and wireless identities.
 
@@ -13,9 +13,12 @@ camera orientation handled, re-encoded without original metadata, and sent only 
 Delete everything removes phone photo copies, local TV records and pairing identities. Deleting
 phone data is not the same as restoring the TV; use the restore flow first if required.
 
-The full build contacts GitHub only for explicit add-on actions from the inherited signed index.
-TVora does not check the upstream app-update feed. The Play build omits add-on downloads. A copied
-or shared report leaves the phone only through the owner's chosen action; review the preview first.
+The full build checks TVora's public GitHub release metadata when the dashboard opens or when
+Check for updates is tapped. GitHub receives the connection address and a generic user agent;
+TV records, photos and pairing keys are not sent. Update buttons open the public release page.
+GitHub support and Telegram contact links open only when tapped. Cards/modules are disabled.
+The Play build makes no update requests. A copied or shared report leaves the phone only through
+the owner's chosen action; review the preview first.
 
 Permissions support local networking/discovery, notifications, an active-operation foreground
 service and the device credential prompt. Photo import uses a single-item system picker, not

@@ -35,6 +35,7 @@ data class ManageState(
     val offline: Boolean = false,     // "Lost the TV. Is it still on? Reconnect"
     val reconnecting: Boolean = false,
     val loading: Boolean = true,
+    val update: UpdateCheck = UpdateCheck.Idle,
     val addOns: Boolean = true,       // STORES-PLAN 1: the "Cards and modules" row (off in the Play build)
 ) {
     val current: TvCard? get() = cards.firstOrNull { it.id == selected } ?: cards.firstOrNull()
@@ -52,6 +53,7 @@ sealed interface ManageIntent {
     data class Open(val section: ManageSection) : ManageIntent
     data object SetUpAnother : ManageIntent
     data object CleanAgain : ManageIntent
+    data object OpenRelease : ManageIntent
     data object AppSettings : ManageIntent
     data object HelpAddTv : ManageIntent
 }
@@ -63,6 +65,7 @@ class ManageMachine(
 ) : Machine<ManageState, ManageIntent, ManageEffect>(ManageState(selected = initial, addOns = d.store.addOns), scope) {
 
     private data class Loaded(val cards: List<TvCard>)
+    private data class Update(val value: UpdateCheck)
     private data class Thumb(val tvId: TvId, val png: ByteArray?)
     private data class Reconnected(val ok: Boolean)
     private data object Reconnecting
@@ -89,6 +92,10 @@ class ManageMachine(
             }
         }
         scope.launch { thumbnail() }
+        if (d.store.updateCheck) scope.launch {
+            val version = attempt { d.updates.latestNewerThan(d.appVersion) }.getOrNull()
+            if (!version.isNullOrEmpty()) send(Update(UpdateCheck.Available(version)))
+        }
     }
 
     override fun reduce(state: ManageState, event: Any): ManageState = when (event) {
@@ -98,6 +105,7 @@ class ManageMachine(
             state.copy(cards = event.cards, selected = selected, loading = false,
                 offline = cur != null && cur.debugging == DebugState.ON && cur.chip == ChipState.OFFLINE)
         }
+        is Update -> state.copy(update = event.value)
         is ManageIntent.Select -> state.copy(selected = event.tvId)
         is Thumb -> state.copy(cards = state.cards.map { if (it.id == event.tvId && event.png != null) it.copy(thumbnail = event.png) else it })
         Reconnecting -> state.copy(reconnecting = true)
@@ -119,6 +127,7 @@ class ManageMachine(
             is ManageIntent.Open -> if (event.section != ManageSection.MODULES || d.store.addOns) id?.let { effect(ManageEffect.Navigate("${event.section.key}/${it.value}")) }
             ManageIntent.SetUpAnother -> effect(ManageEffect.Navigate("setup"))
             ManageIntent.CleanAgain -> id?.let { effect(ManageEffect.Navigate("setup/${it.value}")) }
+            ManageIntent.OpenRelease -> if (d.store.updateCheck) effect(ManageEffect.OpenUrl(ProjectLinks.RELEASES))
             ManageIntent.AppSettings -> effect(ManageEffect.Navigate("appsettings"))
             ManageIntent.HelpAddTv -> id?.let { effect(ManageEffect.Navigate("report/tv/${it.value}")) }
             else -> {}

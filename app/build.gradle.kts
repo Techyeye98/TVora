@@ -8,8 +8,8 @@ android {
     // (STORES-PLAN 0 and 3): GitHub, F-Droid and Google Play ship the same versionCode and versionName.
     defaultConfig {
         applicationId = "dev.tvora.app"
-        versionCode = 18
-        versionName = "0.1.1"
+        versionCode = 19
+        versionName = "0.1.2"
     }
     // STORES-PLAN 1: one codebase, two store builds, the same applicationId and signing certificate.
     // `full` (GitHub and F-Droid) checks GitHub for a newer release and offers the optional add-ons;

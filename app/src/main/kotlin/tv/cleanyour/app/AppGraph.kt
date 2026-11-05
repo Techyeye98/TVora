@@ -186,7 +186,7 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
     val homeDecisions = HomeDecisions(documents)
     val screenLock = ScreenLock { credentialGate.hasScreenLock() }
 
-    // D12: one GET on user action (Settings, "Check for updates"), in the full build only.
+    // Public TVora release metadata: checked off the UI thread on the dashboard or in Settings.
     val updates = store.updateChecker(http)
 
     val setupDeps = SetupDeps(

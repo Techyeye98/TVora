@@ -82,6 +82,35 @@ class ManageMachinesTest {
         }
     }
 
+    @Test fun supportLinksOpenTheOwnersRepositoryAndTelegram() = runTest(timeout = 30.seconds) {
+        val h = Harness()
+        val m = AppSettingsMachine(h.manageDeps(), backgroundScope)
+        settle()
+        m.effects.test {
+            m.dispatch(AppSettingsIntent.SupportRepository); settle()
+            m.dispatch(AppSettingsIntent.ContactDeveloper); settle()
+            assertEquals(listOf(ManageEffect.OpenUrl("https://github.com/Techyeye98/TVora"),
+                ManageEffect.OpenUrl("https://t.me/Techyeye")), drain())
+        }
+    }
+
+    @Test fun dashboardOffersNewReleaseWithoutEnablingModules() = runTest(timeout = 30.seconds) {
+        val h = Harness()
+        h.knownTv()
+        val m = ManageMachine(h.manageDeps(store = StoreRules.FULL.copy(addOns = false)), backgroundScope)
+        settle()
+        assertEquals(UpdateCheck.Available("0.2.0"), m.state.value.update)
+        assertFalse(m.state.value.addOns)
+        m.effects.test {
+            m.dispatch(ManageIntent.Open(ManageSection.MODULES)); settle()
+            assertTrue(drain().isEmpty())
+        }
+        m.effects.test {
+            m.dispatch(ManageIntent.OpenRelease); settle()
+            assertEquals(ManageEffect.OpenUrl(ProjectLinks.RELEASES), drain().single())
+        }
+    }
+
     @Test fun ledgerDerivesChangesAndWhatIsStillOff() = runTest(timeout = 30.seconds) {
         val h = Harness()
         val tv = h.knownTv()
