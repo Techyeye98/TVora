@@ -1,3 +1,10 @@
+# HISTORICAL UPSTREAM METADATA - NOT A TVORA BUILD/SUBMISSION RECIPE.
+# Preserved from udhaykumarbala/cleanyourtv-app for reference only.
+# The app ID, versions, repository, binary URLs and signing fingerprint below belong
+# to upstream Clean Your TV, not TVora (dev.tvora.app). Do not submit or build TVora with this file.
+# TVora has no fdroid.yml workflow or configured F-Droid submission pipeline.
+# Current status: README.md in this directory. Current downloads: GitHub Techyeye98/TVora releases.
+
 Categories:
   - App Manager
   - System

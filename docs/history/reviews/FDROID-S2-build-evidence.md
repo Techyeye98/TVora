@@ -1,3 +1,10 @@
+> **Historical upstream reference — not TVora instructions.**
+> This document was inherited from the Clean Your TV app. Its app IDs, repository URLs,
+> signing identities, versions and `fdroid.yml` workflow references describe that upstream
+> project, not the current TVora repository. TVora has no `fdroid.yml` workflow or configured
+> F-Droid submission pipeline. Do not use this document as a TVora submission/build guide.
+> See the [current F-Droid status](../../fdroid/README.md) and [TVora releases](https://github.com/Techyeye98/TVora/releases/latest).
+
 # F-Droid buildability: evidence (stores stream S2, 2026-10-23)
 
 Everything below ran on the build host in throwaway containers under the shared build lock, from

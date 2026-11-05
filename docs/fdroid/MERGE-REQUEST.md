@@ -1,3 +1,10 @@
+> **Historical upstream reference — not TVora instructions.**
+> This document was inherited from the Clean Your TV app. Its app IDs, repository URLs,
+> signing identities, versions and `fdroid.yml` workflow references describe that upstream
+> project, not the current TVora repository. TVora has no `fdroid.yml` workflow or configured
+> F-Droid submission pipeline. Do not use this document as a TVora submission/build guide.
+> See the [current F-Droid status](../fdroid/README.md) and [TVora releases](https://github.com/Techyeye98/TVora/releases/latest).
+
 <!--
 Not submitted yet, on purpose. F-Droid's Inclusion Policy asks that a new app "should have been
 actively developed for at least 3 months", unless it is proven to have some users. This app's

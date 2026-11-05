@@ -3,13 +3,14 @@
 <p align="center"><strong>Your TV. Your way.</strong><br>Clean up and personalise your Android TV from your phone.</p>
 
 <p align="center">
-  <a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.2.apk"><img src="https://img.shields.io/badge/Download_TVora_APK-Android-20883D?style=for-the-badge&logo=android&logoColor=white" alt="Download TVora APK for Android"></a>
+  <a href="https://github.com/Techyeye98/TVora/releases/latest"><img src="https://img.shields.io/badge/Download_TVora_APK-Android-20883D?style=for-the-badge&logo=android&logoColor=white" alt="Download TVora APK for Android"></a>
 </p>
-<p align="center"><strong><a href="https://github.com/Techyeye98/TVora/releases/latest/download/TVora-v0.1.2.apk">Download APK directly</a></strong> · <a href="https://github.com/Techyeye98/TVora/releases/latest">Release notes</a><br>Free · Android 9+ phone · No account or subscription needed</p>
+<p align="center"><strong><a href="https://github.com/Techyeye98/TVora/releases/latest">Download latest APK</a></strong> · <a href="https://github.com/Techyeye98/TVora/releases/latest">Release notes</a><br>Free · Android 9+ phone · No account or subscription needed</p>
 
-**New to GitHub?** Tap **Download TVora APK** above on your Android phone. Open the downloaded
-APK and, if Android asks, allow installation from your browser or file manager. Install TVora,
-then connect your phone and TV to the same Wi-Fi. You do not need a GitHub account.
+**New to GitHub?** Tap **Download TVora APK** above to open the latest release. Under **Assets**,
+tap the file ending in **.apk** (expand Assets if needed). Open the downloaded APK on your
+Android phone and, if Android asks, allow installation from your browser or file manager.
+Install TVora, then connect your phone and TV to the same Wi-Fi. You do not need a GitHub account.
 
 Used on the maintainer's Mi TV, with positive feedback from users on their setups.
 See the setup instructions below to get started.
