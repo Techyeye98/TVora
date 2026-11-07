@@ -23,3 +23,14 @@ older journals and restore exports; compatible TVs can stage the two allowed the
 write, verify and undo them through the launcher's existing ThemeProvider. Existing sync plan
 hashes are preserved. Dashboard holds follow resume/pause without changing its visual layout.
 The TV launcher assets, UI animation code and signing identity remain unchanged.
+
+
+## TVora settings preservation (0.1.5)
+
+`ConfigTransport.readConfig` is an optional bounded read, implemented through the existing probe
+layer. Each TV keeps its last successfully sent settings document with the snapshot hash it
+supersedes. A later snapshot or a live config read is authoritative. Section edits preserve other
+keys, including unknown keys. `preserveWallpaper` on setup/theme/card requests removes image-file
+operations from config-only plans; older callers keep their previous default behavior. A completed
+restore clears the later document. The existing shell-call allowlist, launcher assets, UI, motion
+and signing identity remain unchanged.

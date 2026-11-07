@@ -1,5 +1,14 @@
 # TVora changelog
 
+## 0.1.5 (unreleased)
+
+- Merge wallpaper, look, dock and button edits into the current TV settings instead of rebuilding unrelated sections.
+- Keep Bluetooth, reorder, hidden apps, remote mappings, clock, motion and unknown settings across look changes.
+- Keep the full saved app order when switching to a smaller visible grid.
+- Preserve existing wallpaper files during unrelated edits and retain disabled personal photos for re-enabling.
+- Keep a last-successful document per TV; do not advance it after failed writes or reuse it after a successful restore.
+- Read current config through the launcher provider when direct reads are unavailable; reject invalid or oversized data.
+
 ## 0.1.4 (unreleased)
 
 - Reconnect to saved TVs at changed addresses/subnets using their trusted key and TV identity; keep the dashboard connection only while resumed.

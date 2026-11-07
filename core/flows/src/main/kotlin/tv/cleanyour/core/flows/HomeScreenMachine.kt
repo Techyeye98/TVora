@@ -2,6 +2,7 @@ package tv.cleanyour.core.flows
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
 import tv.cleanyour.core.engine.RunStatus
 import tv.cleanyour.core.model.Component
 import tv.cleanyour.core.model.EnabledState
@@ -98,6 +99,8 @@ class HomeScreenMachine(
         is Preview -> state.copy(stockPreview = event.plan)
         is Drift -> state.copy(drift = event.drift)
         HomeScreenIntent.CancelPreview -> state.copy(stockPreview = null, updatePreview = null)
+        is HomeScreenIntent.SetDock, is HomeScreenIntent.SetTheme, is HomeScreenIntent.SetPersonal, HomeScreenIntent.RestoreMine ->
+            if (state.busy == null && state.notOnTv == null) state.copy(busy = Busy.Connecting) else state
         else -> state
     }
 
@@ -106,9 +109,9 @@ class HomeScreenMachine(
         // 0.3.3 D2: nothing to send the dock or the look to.
         if (after.notOnTv != null && (event is HomeScreenIntent.SetDock || event is HomeScreenIntent.SetTheme || event is HomeScreenIntent.SetPersonal || event == HomeScreenIntent.RestoreMine)) return
         when (event) {
-            is HomeScreenIntent.SetDock -> scope.launch { apply(event.dock, after.themeId) }
+            is HomeScreenIntent.SetDock -> scope.launch { apply(event.dock, after.themeId, edit = HomeEdit.DOCK) }
             is HomeScreenIntent.SetPersonal -> scope.launch {
-                apply(savedDock() ?: after.dock.map { it.pkg }, after.themeId, event.value)
+                apply(savedDock() ?: after.dock.map { it.pkg }, after.themeId, event.value, HomeEdit.PERSONAL, before.personal)
             }
             // RF-LAUNCHER-250 F4: a new look and "Restore mine" push the dock as it was saved, as
             // ModulesMachine does, not the list as the TV shows it now (an app since gone or switched
@@ -132,10 +135,11 @@ class HomeScreenMachine(
         val snap = d.snapshots.latest(tvId)
         val packages = snap?.packages.orEmpty()
         val choice = d.homePrefs.load(tvId)
-        val personal = PersonalHomePrefs(d.documents).load(tvId)
-        val overlay = snap?.launcherOverlay?.let {
-            (LauncherConfigCodec.decode(it) as? DecodeResult.Ok)?.doc
-        }
+        val overlay = attempt {
+            d.access.live(tvId)?.let { d.configTransport.readConfig(it) }?.let(HomeSettings::decode)
+                ?: d.homePrefs.settings.current(tvId, snap)
+        }.getOrNull()
+        val personal = HomeSettingsPatch.personal(overlay, PersonalHomePrefs(d.documents).load(tvId))
         val hidden = personal.hidden ?: overlay?.hiddenApps ?: theme(choice?.themeId)?.doc?.hiddenApps
             ?: LauncherConfigCodec.builtInDefaults.hiddenApps.map(::PackageName)
         // The stored snapshot cannot say which apps are launchable, so the rule without that
@@ -145,9 +149,9 @@ class HomeScreenMachine(
             .map { AppChoice(it, d.nameOf(it, packages[it]?.label)) }.sortedBy { it.name.lowercase() }
         // The dock as the TV shows it: an app no longer there (gone, switched off) is skipped and the
         // later ones move up a slot, as the launcher does.
-        val columns = DockLayers.columnsOf(theme(choice?.themeId)?.doc)
+        val columns = DockLayers.columnsOf(overlay ?: theme(choice?.themeId)?.doc)
         val shown = { p: PackageName -> p !in hidden && (snap == null || packages[p]?.enabled.let { it != null && it != EnabledState.DISABLED && it != EnabledState.DISABLED_USER }) }
-        val dock = DockLayers.decode(choice?.dock.orEmpty(), shown, columns).map { AppChoice(it, d.nameOf(it, packages[it]?.label)) }
+        val dock = DockLayers.decode(overlay?.dockApps ?: choice?.dock.orEmpty(), shown, columns).map { AppChoice(it, d.nameOf(it, packages[it]?.label)) }
         send(Loaded(HomeScreenState(tv.nickname, dock, apps, choice?.themeId, state.value.themes, stock = profile?.stockLaunchers?.firstOrNull(),
             homeScreenOurs = tv.launcher != null, columns = columns, updateTo = updateTo(tv, packages),
             tvSideSettings = (packages[Launcher.pkg]?.versionCode ?: 0) >= FIRST_WITH_TV_SETTINGS,
@@ -252,17 +256,36 @@ class HomeScreenMachine(
     // the dock and the rows under it in order, rows_below_dock the rows under the dock that hold an
     // app (DockLayers), so the TV shows the rows the sheet showed. module_cards keeps this TV's cards
     // choice (RFC-CARDS-1): a new dock or theme never turns cards on or off.
-    private suspend fun apply(dock: List<PackageName>, themeId: String?, personal: HomePersonalization = state.value.personal) {
-        val cards = Cards.current(d, tvId, d.homePrefs.load(tvId))
-        val look = attempt { Look.encode(d.encoder, d.blobs, theme(themeId), dock, cards, personal) }.getOrNull()
-            ?: return effect(ManageEffect.Snackbar(SnackKind.FAILED, "", false))
-        // Keep hidden apps in the saved order so showing one again restores its position.
-        val kept = DockLayers.applyTo(theme(themeId)?.doc ?: tv.cleanyour.core.spec.LauncherConfigDoc(), dock).dockApps.orEmpty()
-        val r = writer.write(tvId, PlanRequest.ApplyTheme(look.doc, look.config, look.wallpaper)) { send(BusyNow(it)) }
+    private suspend fun apply(dock: List<PackageName>, themeId: String?, personal: HomePersonalization = state.value.personal,
+                              edit: HomeEdit = HomeEdit.LOOK, before: HomePersonalization = state.value.personal) =
+        d.homePrefs.settings.lock(tvId).withLock { applyLocked(dock, themeId, personal, edit, before) }
+
+    private suspend fun applyLocked(dock: List<PackageName>, themeId: String?, personal: HomePersonalization,
+                                    edit: HomeEdit, before: HomePersonalization) {
+        send(BusyNow(Busy.Connecting))
+        val session = (attempt { d.access.session(tvId) }.getOrNull() as? AccessResult.Ok)?.session
+            ?: return send(BusyNow(null))
+        val saved = d.homePrefs.load(tvId)
+        val selectedTheme = if (edit == HomeEdit.LOOK) themeId else saved?.themeId ?: themeId
+        val cards = Cards.current(d, tvId, saved)
+        val look = attempt {
+            val current = d.configTransport.readConfig(session)?.let(HomeSettings::decode)
+                ?: d.homePrefs.settings.current(tvId, d.snapshots.latest(tvId))
+            check(current != null || d.tv(tvId)?.launcher?.ourOverlayDigest == null) { "The previous launcher settings are unavailable" }
+            Look.encode(d.encoder, d.blobs, theme(selectedTheme), dock, cards, personal, current, edit, before)
+        }.getOrNull() ?: run {
+            send(BusyNow(null))
+            return effect(ManageEffect.Snackbar(SnackKind.FAILED, "", false))
+        }
+        // Changing a look must not discard hidden apps from the phone's full saved order.
+        val kept = if (edit == HomeEdit.DOCK) DockLayers.applyTo(look.doc, dock).dockApps.orEmpty()
+            else saved?.dock ?: look.doc.dockApps.orEmpty()
+        val r = writer.write(tvId, PlanRequest.ApplyTheme(look.doc, look.config, look.wallpaper, look.preserveWallpaper)) { send(BusyNow(it)) }
         send(BusyNow(null))
         if (r is WriteResult.Done && r.finished.status == RunStatus.COMPLETED) {
-            PersonalHomePrefs(d.documents).save(tvId, personal)
-            d.homePrefs.save(tvId, HomeChoice(kept, themeId, cards))
+            PersonalHomePrefs(d.documents).save(tvId, HomeSettingsPatch.personal(look.doc, personal))
+            d.homePrefs.save(tvId, HomeChoice(kept, selectedTheme, look.doc.moduleCards ?: cards))
+            d.homePrefs.settings.remember(tvId, look.doc, d.clock.nowMs(), d.snapshots.latest(tvId))
             rememberPushedLook(d, tvId, look.digest)
             send(Drift(false))
             effect(ManageEffect.Snackbar(SnackKind.HOME_SAVED, "", false))

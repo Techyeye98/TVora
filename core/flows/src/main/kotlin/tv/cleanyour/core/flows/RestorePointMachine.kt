@@ -113,6 +113,7 @@ class RestorePointMachine(
         when (r) {
             is WriteResult.Done -> {
                 if (r.restoredAll()) {
+                    attempt { d.homePrefs.settings.clear(tvId) }
                     d.tv(tvId)?.let { d.tvs.upsert(it.copy(launcher = if (p.removeLauncher) null else it.launcher)) }
                     send(Phase(RestorePhase.Finished("undo", d.snapshots.baseline(tvId)?.takenAtMs ?: d.clock.nowMs())))
                     effect(ManageEffect.HapticDouble)

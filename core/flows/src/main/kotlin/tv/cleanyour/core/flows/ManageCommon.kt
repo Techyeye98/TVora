@@ -115,6 +115,7 @@ class ManageDeps(
 data class HomeChoice(val dock: List<PackageName>, val themeId: String?, val cards: Boolean? = null)
 
 class HomePrefs(private val store: DocumentStore) {
+    internal val settings = HomeSettings(store)
     private fun path(id: TvId) = "tvs/${id.value}/home.txt"
 
     suspend fun load(id: TvId): HomeChoice? = store.read(path(id)) { bytes ->

@@ -95,6 +95,8 @@ class FakeConfigTransport(
     @Volatile var resets = 0
         private set
 
+    var currentConfig: ByteArray? = null
+    override suspend fun readConfig(session: TvSession): ByteArray? = currentConfig
     override suspend fun readDigest(session: TvSession): Sha256? = digest
 
     override fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?, route: FileRoute): List<Op> {

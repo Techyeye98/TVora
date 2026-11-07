@@ -25,6 +25,9 @@ class FileOverlayTransport(
 
     override suspend fun readDigest(session: TvSession): Sha256? = prober.fileSha256(session, CONFIG)
 
+    override suspend fun readConfig(session: TvSession): ByteArray? =
+        tv.cleanyour.core.probe.LauncherSettingsFile.read(session)
+
     // RFC-THEME-1: through the launcher's provider the files are staged in TMP (so that folder is made instead of the
     // launcher's: a TV that locks the shell out of Android/data refuses the mkdir there, and the launcher's first
     // start makes its own folder), written by the provider and checked as the launcher reads them.

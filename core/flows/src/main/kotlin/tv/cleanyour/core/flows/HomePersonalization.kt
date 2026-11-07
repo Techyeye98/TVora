@@ -28,7 +28,7 @@ data class HomePersonalization(
             dockApps = doc.dockApps?.filterNot { it in hidden.orEmpty() },
             wallpaper = wallpaperEnabled ?: doc.wallpaper,
             wallpaperDim = if (wallpaperEnabled == true) dim else doc.wallpaperDim,
-            reorderButton = arrange != false,
+            reorderButton = arrange ?: doc.reorderButton ?: true,
             unknown = extra,
         )
     }

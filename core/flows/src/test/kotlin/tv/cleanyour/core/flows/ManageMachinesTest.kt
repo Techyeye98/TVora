@@ -703,7 +703,7 @@ class ManageMachinesTest {
     // choice back the way the TV shows it, so an app switched off since then is skipped.
     @Test fun dockRowsGoToTheTvAsOneListAndComeBackAsTheTvShowsThem() = runTest(timeout = 30.seconds) {
         val h = Harness()
-        val tv = h.knownTv().copy(launcher = LauncherState(1, Samples.zeroHash, Samples.zeroHash, Samples.zeroHash)).also { h.tvs.upsert(it) }
+        val tv = h.knownTv().copy(launcher = LauncherState(1, Samples.zeroHash, null, null)).also { h.tvs.upsert(it) }
         val six = List(6) { PackageName("com.example.app$it") }
         fun state(on: Boolean) = PackageState(if (on) EnabledState.ENABLED else EnabledState.DISABLED_USER, false, 0, null, false, false, null, false)
         h.snapshots.save(Samples.snapshot(packages = Samples.miTvPackages() + six.associateWith { state(true) }, takenAtMs = Samples.NOW_MS + 1))
@@ -733,7 +733,7 @@ class ManageMachinesTest {
     // and the TV's own dock edit keeps applying (upstream #340). Up to 18 apps under Six columns.
     @Test fun aNewLookPushesTheSavedDockUnchanged() = runTest(timeout = 30.seconds) {
         val h = Harness()
-        val tv = h.knownTv().copy(launcher = LauncherState(1, Samples.zeroHash, Samples.zeroHash, Samples.zeroHash))
+        val tv = h.knownTv().copy(launcher = LauncherState(1, Samples.zeroHash, null, null))
         h.tvs.upsert(tv)
         val apps = List(18) { PackageName("com.example.app$it") }
         fun state(on: Boolean) = PackageState(if (on) EnabledState.ENABLED else EnabledState.DISABLED_USER, false, 0, null, false, false, null, false)
@@ -749,10 +749,10 @@ class ManageMachinesTest {
         assertEquals(apps, h.planner.requests.filterIsInstance<PlanRequest.ApplyTheme>().last().doc.dockApps)
         m.dispatch(HomeScreenIntent.RestoreMine); settle()
         assertEquals(apps, h.planner.requests.filterIsInstance<PlanRequest.ApplyTheme>().last().doc.dockApps)
-        // A four-tile look holds 12: the saved dock is cut to its first 12 there, the stated limit.
+        // A smaller visible grid must not discard the rest of the saved app order.
         m.dispatch(HomeScreenIntent.SetTheme("aurora")); settle()
-        assertEquals(apps.take(12), h.planner.requests.filterIsInstance<PlanRequest.ApplyTheme>().last().doc.dockApps)
-        assertEquals(apps.take(12), HomePrefs(h.documents).load(tv.id)?.dock)
+        assertEquals(apps, h.planner.requests.filterIsInstance<PlanRequest.ApplyTheme>().last().doc.dockApps)
+        assertEquals(apps, HomePrefs(h.documents).load(tv.id)?.dock)
     }
 
     // RFC-CARDS-1: a TV set up with the new home screen and module cards off, Retro in the index.

@@ -18,15 +18,23 @@ import tv.cleanyour.core.store.BlobStore
 // (RFC-DOCK-1), Manage's ApplyTheme and the Modules add (RFC-CARDS-1) all push what this makes, so
 // one choice is the same bytes wherever it is sent from. The wallpaper is the theme's own, when it
 // has one. module_cards is always written: `cards` is this TV's cards choice (Cards).
-internal class Look(val doc: LauncherConfigDoc, val digest: Sha256, val config: BlobRef, val wallpaper: BlobRef?) {
+internal class Look(val doc: LauncherConfigDoc, val digest: Sha256, val config: BlobRef, val wallpaper: BlobRef?, val preserveWallpaper: Boolean = false) {
     companion object {
         suspend fun encode(encoder: ConfigEncoder, blobs: BlobStore, theme: Theme?, dock: List<PackageName>, cards: Boolean,
-            personal: HomePersonalization = HomePersonalization()): Look {
-            val base = personal.applyTo(theme?.doc ?: LauncherConfigDoc())
-            val doc = DockLayers.applyTo(base, dock.filterNot { it in personal.hidden.orEmpty() }).copy(moduleCards = cards)
+            personal: HomePersonalization = HomePersonalization(), current: LauncherConfigDoc? = null,
+            edit: HomeEdit = HomeEdit.LOOK, before: HomePersonalization = personal): Look {
+            val appliedPersonal = if (current != null && edit == HomeEdit.LOOK && personal.photo == null)
+                personal.copy(wallpaperEnabled = null) else personal
+            val base = appliedPersonal.applyTo(theme?.doc ?: LauncherConfigDoc())
+            val built = DockLayers.applyTo(base, dock.filterNot { it in personal.hidden.orEmpty() }).copy(moduleCards = cards)
+            val doc = current?.let { HomeSettingsPatch.merge(it, built, edit, before, personal, dock) } ?: built
             val bytes = encoder.encode(doc)
-            val wallpaper = if (personal.wallpaperEnabled == false) null else personal.photo ?: theme?.wallpaper
-            return Look(doc, sha256Of(bytes), blobs.putBytes(bytes), wallpaper)
+            val wallpaper = if (doc.wallpaper == false) null else personal.photo ?: theme?.wallpaper
+            val preserve = current != null && (edit == HomeEdit.DOCK || edit == HomeEdit.CARDS ||
+                (edit == HomeEdit.LOOK && personal.photo != null && personal.wallpaperEnabled == false) ||
+                (edit == HomeEdit.PERSONAL && before.photo == personal.photo &&
+                    !(before.wallpaperEnabled != true && personal.wallpaperEnabled == true && personal.photo != null)))
+            return Look(doc, sha256Of(bytes), blobs.putBytes(bytes), wallpaper, preserve)
         }
     }
 }

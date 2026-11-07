@@ -185,12 +185,15 @@ class ModulesMachine(
         if (Cards.current(d, tvId, choice, overlay)) return null
         val theme = choice?.themeId?.let { id -> d.themes.bundled().firstOrNull { it.id == id } }
         val look = Look.encode(d.encoder, d.blobs, theme, choice?.dock.orEmpty(), cards = true,
-            personal = PersonalHomePrefs(d.documents).load(tvId))
+            personal = PersonalHomePrefs(d.documents).load(tvId),
+            current = d.access.live(tvId)?.let { d.configTransport.readConfig(it) }?.let(HomeSettings::decode)
+                ?: d.homePrefs.settings.current(tvId, d.snapshots.latest(tvId)), edit = HomeEdit.CARDS)
         return look to (choice?.copy(cards = true) ?: HomeChoice(look.doc.dockApps.orEmpty(), theme?.id, cards = true))
     }
 
     private suspend fun keepCardsOn(pushed: Pair<Look, HomeChoice>) {
         d.homePrefs.save(tvId, pushed.second)
+        d.homePrefs.settings.remember(tvId, pushed.first.doc, d.clock.nowMs(), d.snapshots.latest(tvId))
         rememberPushedLook(d, tvId, pushed.first.digest)
     }
 
@@ -232,7 +235,7 @@ class ModulesMachine(
             val snapshot = d.runner.snapshotFor(tv, session)
             // RFC-CARDS-1: adding a card is the person asking for cards, so the same plan turns them on.
             cardsOn = cardsOnLook(snapshot.launcherOverlay)
-            val request = PlanRequest.AddModule(m, v, blob, cardsOn?.first?.config, cardsOn?.first?.wallpaper)
+            val request = PlanRequest.AddModule(m, v, blob, cardsOn?.first?.config, cardsOn?.first?.wallpaper, cardsOn?.first?.preserveWallpaper == true)
             val plan = (d.runner.plan(tv, request, snapshot) as? PlanResult.Ok)?.plan ?: return@attempt null
             d.runner.run(tv, plan, session, pass, onStarted = { d.sessionEnd.touched(tvId) }) { s -> if (s is RunState.Running) send(Step(InstallStep.Installing(s.percent))) }
         }.getOrNull()
@@ -255,7 +258,7 @@ class ModulesMachine(
         val tv = d.tv(tvId) ?: return
         val pushed = attempt { cardsOnLook(null) }.getOrNull() ?: return load()
         send(Showing(id))
-        val r = TvWriter(d).write(tvId, PlanRequest.ApplyTheme(pushed.first.doc, pushed.first.config, pushed.first.wallpaper))
+        val r = TvWriter(d).write(tvId, PlanRequest.ApplyTheme(pushed.first.doc, pushed.first.config, pushed.first.wallpaper, pushed.first.preserveWallpaper))
         send(Showing(null))
         if (r !is WriteResult.Done) {
             // Paused: the open-run card (O2); cancelled: nothing changed, nothing to say.

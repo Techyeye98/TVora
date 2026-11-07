@@ -1566,4 +1566,23 @@ class SetupMachineTest {
         assertTrue(setup.choices.installLauncher)
         assertNotNull(setup.config, "the look is planned")
     }
+    @Test fun setupLookChangesKeepExistingBluetoothReorderAndRemoteSettings() = runTest(timeout = 30.seconds) {
+        val h = Harness()
+        h.sessions.allowPromptFor[HOST] = "AB:CD:7F:2A"
+        val original = """{"show_bluetooth_pill":true,"reorder_button":false,"settings_key_keycodes":[82],"future_widget":{"enabled":true},"wallpaper":true}""".encodeToByteArray()
+        h.prober.snapshotFor = { reason ->
+            val snap = Samples.miTvSnapshot(reason).copy(launcherOverlay = original)
+            snap.copy(contentHash = tv.cleanyour.core.store.SnapshotCodec.hash(snap))
+        }
+        val m = h.setup(backgroundScope)
+        toFound(h, m)
+        m.dispatch(SetupIntent.SetTheme("aurora")); settle()
+        val request = h.planner.requests.filterIsInstance<PlanRequest.Setup>().last()
+        val doc = assertIs<tv.cleanyour.core.spec.DecodeResult.Ok>(LauncherConfigCodec.decode(h.blobs.bytes(assertNotNull(request.config)))).doc
+        assertEquals(false, doc.reorderButton)
+        assertEquals(kotlinx.serialization.json.JsonPrimitive(true), doc.unknown["show_bluetooth_pill"])
+        assertEquals(listOf(82), doc.settingsKeyKeycodes)
+        assertTrue("future_widget" in doc.unknown)
+    }
+
 }

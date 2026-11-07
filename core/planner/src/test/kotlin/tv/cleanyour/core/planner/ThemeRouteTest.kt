@@ -71,4 +71,14 @@ class ThemeRouteTest {
             assertEquals(listOf(Op.RemoveFile(path, route)), p.steps.map { it.op }.filterIsInstance<Op.RemoveFile>(), route.name)
         }
     }
+    @Test fun unrelatedEditsNeverWriteOrDeleteTheWallpaper() {
+        for (sdk in listOf(28, 30)) for (image in listOf(null, wallpaper)) {
+            val p = plan(PlanRequest.ApplyTheme(LauncherConfigDoc(), config, image, preserveWallpaper = true),
+                snapshot = withLauncher(9, sdk), planner = planner())
+            val files = p.steps.mapNotNull { when (val op = it.op) { is Op.PushAsset -> op.dest; is Op.RemoveFile -> op.path; else -> null } }
+            assertTrue(files.any { it.segments == listOf("config.json") })
+            assertTrue(files.none { it.segments == listOf("wallpaper.jpg") })
+        }
+    }
+
 }

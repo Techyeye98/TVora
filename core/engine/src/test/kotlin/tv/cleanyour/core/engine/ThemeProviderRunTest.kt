@@ -98,4 +98,18 @@ class ThemeProviderRunTest {
         val failed = h.records(plan).filterIsInstance<JournalRecord.Failed>().single()
         assertTrue(failed.error.startsWith("verify: expected ${cfgSha.hex}"), failed.error)
     }
+    @Test fun aConfigOnlyEditKeepsTheExistingImageOnBothRoutes() = runTest(timeout = TEST_TIMEOUT) {
+        for (sdk in listOf(28, 30)) {
+            val h = harness(this, sdk)
+            val existing = "the user's existing image".encodeToByteArray()
+            h.tv.files[FileOverlayTransport.WALLPAPER.absolute] = existing
+            val p = h.plan(PlanRequest.ApplyTheme(LauncherConfigDoc(), BlobRef(cfgSha, cfg.size.toLong(), "cfg"), null,
+                preserveWallpaper = true))
+            val engine = h.engine()
+            engine.start(p, h.tv, p.hash, h.pass())
+            assertEquals(RunStatus.COMPLETED, assertIs<RunState.Finished>(h.settle(engine)).status)
+            assertTrue(h.tv.files[FileOverlayTransport.WALLPAPER.absolute]!!.contentEquals(existing))
+        }
+    }
+
 }

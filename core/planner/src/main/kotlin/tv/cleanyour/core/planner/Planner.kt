@@ -26,13 +26,13 @@ enum class PlanKind { SETUP, PUT_BACK, SWITCH_OFF, LEFTOVERS, THEME, ADD_MODULE,
 sealed interface PlanRequest {
     data class Setup(val resolution: ProfileResolution, val choices: Choices, val launcher: LauncherArtifact, val level: Level,
         val config: BlobRef? = null, val wallpaper: BlobRef? = null,   // RFC-DOCK-1: config = encode(DockLayers.applyTo(theme doc, dock)) in the BlobStore
-        val curtain: LauncherArtifact? = null) : PlanRequest           // RFC-CURTAIN-1: the bundled TV curtain, from CurtainPin
+        val curtain: LauncherArtifact? = null, val preserveWallpaper: Boolean = false) : PlanRequest           // RFC-CURTAIN-1: the bundled TV curtain, from CurtainPin
     data class PutBack(val pkg: PackageName) : PlanRequest
     data class SwitchOff(val pkgs: Set<PackageName>) : PlanRequest
     data class Leftovers(val expectedDisabled: Set<PackageName>) : PlanRequest
-    data class ApplyTheme(val doc: LauncherConfigDoc, val config: BlobRef, val wallpaper: BlobRef?) : PlanRequest   // R0: 14 renamed from Theme; config = encode(doc) in the BlobStore
+    data class ApplyTheme(val doc: LauncherConfigDoc, val config: BlobRef, val wallpaper: BlobRef?, val preserveWallpaper: Boolean = false) : PlanRequest   // R0: 14 renamed from Theme; config = encode(doc) in the BlobStore
     data class AddModule(val module: Module, val version: ModuleVersion, val apk: BlobRef,
-        val config: BlobRef? = null, val wallpaper: BlobRef? = null) : PlanRequest   // R0: 14 renamed from Module; RFC-CARDS-1: config = the look with module_cards on
+        val config: BlobRef? = null, val wallpaper: BlobRef? = null, val preserveWallpaper: Boolean = false) : PlanRequest   // R0: 14 renamed from Module; RFC-CARDS-1: config = the look with module_cards on
     data class RemoveModule(val pkg: PackageName) : PlanRequest
     data class UseStockHome(val stock: Component) : PlanRequest
     data class UndoEverything(val changes: List<ChangeRecord>, val removeLauncher: Boolean) : PlanRequest

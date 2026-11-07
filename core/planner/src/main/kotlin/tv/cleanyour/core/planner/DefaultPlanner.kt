@@ -90,7 +90,7 @@ class DefaultPlanner(
             is PlanRequest.PutBack -> { d.putBack(request.pkg); PlanKind.PUT_BACK }
             is PlanRequest.SwitchOff -> { d.switchOff(request.pkgs); PlanKind.SWITCH_OFF }
             is PlanRequest.Leftovers -> { d.leftovers(request.expectedDisabled); PlanKind.LEFTOVERS }
-            is PlanRequest.ApplyTheme -> { d.applyTheme(request.config, request.wallpaper); PlanKind.THEME }
+            is PlanRequest.ApplyTheme -> { d.applyTheme(request.config, request.wallpaper, request.preserveWallpaper); PlanKind.THEME }
             is PlanRequest.AddModule -> { d.addModule(request); PlanKind.ADD_MODULE }
             is PlanRequest.RemoveModule -> { d.removeModule(request.pkg); PlanKind.REMOVE_MODULE }
             is PlanRequest.UseStockHome -> { d.useStockHome(request.stock, null); PlanKind.USE_STOCK_HOME }
@@ -256,7 +256,7 @@ class DefaultPlanner(
                 val overlayGone = !installed(launcher.pkg) || replacesLauncher   // a fresh install, or the uninstall took its files
                 // RFC-THEME-1: the launcher the look reaches is the one this plan installs, else the one on the TV.
                 val version = if (launcherSteps) req.launcher.versionCode else state(launcher.pkg)?.versionCode
-                look(config, req.wallpaper, overlayGone, FailurePolicy.CONTINUE, themeRoute(version))
+                look(config, req.wallpaper, overlayGone, FailurePolicy.CONTINUE, themeRoute(version), req.preserveWallpaper)
             }
             if (choices.takeover) takeover(req.launcher, profile, stockLaunchers, launcherSteps, choices.wizardWifi)
             homeSwitchRows()
@@ -548,9 +548,9 @@ class DefaultPlanner(
             }
         }
 
-        fun applyTheme(config: BlobRef, wallpaper: BlobRef?) {
+        fun applyTheme(config: BlobRef, wallpaper: BlobRef?, preserveWallpaper: Boolean) {
             if (!installed(launcher.pkg)) { refuse("the new home screen is not installed"); return }
-            look(config, wallpaper, overlayGone = false, pushPolicy = FailurePolicy.STOP_AND_ROLLBACK, route = themeRoute(state(launcher.pkg)?.versionCode))
+            look(config, wallpaper, overlayGone = false, pushPolicy = FailurePolicy.STOP_AND_ROLLBACK, route = themeRoute(state(launcher.pkg)?.versionCode), preserveWallpaper = preserveWallpaper)
         }
 
         // RFC-THEME-1 (issues #1279, #1649, #1094, #1290): the look goes through the launcher's ThemeProvider where
@@ -567,9 +567,12 @@ class DefaultPlanner(
         // both pushes record that the files were absent and Undo everything removes them again.
         // Otherwise the config prior is the overlay the probe read and the wallpaper's is unknown.
         // `pushPolicy` is the pushes' failure policy; the other steps always CONTINUE.
-        fun look(config: BlobRef, wallpaper: BlobRef?, overlayGone: Boolean, pushPolicy: FailurePolicy, route: FileRoute = FileRoute.SYNC) {
+        fun look(config: BlobRef, wallpaper: BlobRef?, overlayGone: Boolean, pushPolicy: FailurePolicy, route: FileRoute = FileRoute.SYNC, preserveWallpaper: Boolean = false) {
             val ops = try {
-                configTransport.writePlanSteps(config, wallpaper, route)
+                configTransport.writePlanSteps(config, wallpaper, route).filterNot { op ->
+                    val path = when (op) { is Op.PushAsset -> op.dest; is Op.RemoveFile -> op.path; else -> null }
+                    preserveWallpaper && path?.dir == RemoteDir.OVERLAY && path.segments == listOf("wallpaper.jpg")
+                }
             } catch (e: IllegalArgumentException) {
                 refuse("the look cannot be sent to the TV: ${e.message}"); return
             }
@@ -633,7 +636,7 @@ class DefaultPlanner(
             // screen on the TV there is nothing to read it, so the add goes without it.
             val config = req.config
             if (config != null && installed(launcher.pkg)) look(config, req.wallpaper, overlayGone = false, pushPolicy = FailurePolicy.STOP_AND_ROLLBACK,
-                route = themeRoute(state(launcher.pkg)?.versionCode))
+                route = themeRoute(state(launcher.pkg)?.versionCode), preserveWallpaper = req.preserveWallpaper)
             step(Op.PressHome, null, GROUP_MODULE, "Showing the home screen", FailurePolicy.CONTINUE)
         }
 

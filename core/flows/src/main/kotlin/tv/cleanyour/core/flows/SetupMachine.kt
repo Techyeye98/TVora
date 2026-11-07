@@ -229,6 +229,7 @@ class SetupMachine(
     private var blocked = false         // wrong TV, no shell v2 or a refusal: no retry until the person asks
     private var currentPlanId: PlanId? = null
     private var setupPlan: Plan? = null
+    private var setupLook: Look? = null
     private var setupHome: Pair<Sha256, HomeChoice>? = null   // the look the current plan pushes, by its digest
     private var undoRequested = false
     private var askedNotifications = false
@@ -812,16 +813,23 @@ class SetupMachine(
         // not ask for; on only when they turned cards on for this TV in an earlier session (kept, or
         // said outright by the TV's overlay).
         val cards = Cards.of(deps.homePrefs?.let { attempt { it.load(record.id) }.getOrNull() }?.cards, snap.launcherOverlay, Cards.SETUP_DEFAULT)
-        val look = if (!possible) null else attempt { Look.encode(deps.encoder, deps.blobs, theme, dock, cards) }
+        val earlier = deps.homePrefs?.load(record.id)
+        val edit = if (earlier?.themeId == draft.themeId) HomeEdit.DOCK else HomeEdit.LOOK
+        val look = if (!possible) null else attempt {
+            val currentSettings = deps.homePrefs?.settings?.current(record.id, snap)
+                ?: snap.launcherOverlay?.let(HomeSettings::decode)
+            Look.encode(deps.encoder, deps.blobs, theme, dock, cards, current = currentSettings, edit = edit)
+        }
             .onFailure { deps.log.line("setup: the look could not be encoded, planned without it") }.getOrNull()
-        setupHome = look?.let { it.digest to HomeChoice(it.doc.dockApps.orEmpty(), draft.themeId, cards) }
+        setupLook = look
+        setupHome = look?.let { it.digest to HomeChoice(it.doc.dockApps.orEmpty(), draft.themeId, it.doc.moduleCards ?: cards) }
         // RFC-CURTAIN-1: the TV shows the progress unless Custom switched it off (Simple never shows
         // the switch). An asset that does not match its pin is never offered; the plan goes without it.
         val showOnTv = draft.level == Level.SIMPLE || draft.curtain
         val oldAndroid = (deviceFacts?.sdk ?: DefaultPlanner.TV_MIN_SDK) < DefaultPlanner.TV_MIN_SDK   // P1: the curtain cannot install either
         val curtain = if (!showOnTv || oldAndroid) null else deps.curtainPin?.let { pin -> attempt { pin.bundled() }
             .onFailure { deps.log.line("setup: the TV curtain does not match its pin, planned without it") }.getOrNull() }
-        when (val r = deps.runner.plan(record, PlanRequest.Setup(res, choices.copy(curtain = showOnTv), launcher, draft.level, look?.config, look?.wallpaper, curtain), snap)) {
+        when (val r = deps.runner.plan(record, PlanRequest.Setup(res, choices.copy(curtain = showOnTv), launcher, draft.level, look?.config, look?.wallpaper, curtain, look?.preserveWallpaper == true), snap)) {
             is PlanResult.Ok -> {
                 setupPlan = r.plan
                 val label = { p: PackageName -> AppNames.of(p, deps.facts, snap.packages[p]?.label) }
@@ -1074,7 +1082,10 @@ class SetupMachine(
         deps.tvs.upsert(done)
         // RFC-CARDS-1: what the run pushed is what Manage starts from (dock, theme, cards).
         setupHome?.takeIf { (pushedDigest, _) -> pushedDigest == digest }?.let { (_, choice) ->
-            deps.homePrefs?.let { prefs -> attempt { prefs.save(tvId, choice) } }
+            deps.homePrefs?.let { prefs -> attempt {
+                prefs.save(tvId, choice)
+                setupLook?.takeIf { it.digest == digest }?.let { prefs.settings.remember(tvId, it.doc, deps.clock.nowMs(), deps.snapshots.latest(tvId)) }
+            } }
         }
         // Issue #15: nothing switched off, no new home screen and no other change of this run: Done
         // says plainly that nothing changed. The TV curtain comes and goes, so it does not count,
