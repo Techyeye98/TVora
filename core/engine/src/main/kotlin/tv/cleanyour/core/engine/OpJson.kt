@@ -15,6 +15,7 @@ import tv.cleanyour.core.model.Component
 import tv.cleanyour.core.model.CurtainGroup
 import tv.cleanyour.core.model.CurtainStage
 import tv.cleanyour.core.model.EnabledState
+import tv.cleanyour.core.model.FileRoute
 import tv.cleanyour.core.model.InstallFlag
 import tv.cleanyour.core.model.Op
 import tv.cleanyour.core.model.PackageName
@@ -56,8 +57,10 @@ object OpJson {
             is Op.KillWatchdog -> { put("v", "kill_watchdog"); put("token", op.token.value) }
             Op.PressHome -> put("v", "press_home")
             is Op.Mkdir -> { put("v", "mkdir"); put("dir", op.dir.name) }
-            is Op.PushAsset -> { put("v", "push_asset"); put("src", blob(op.src)); put("dest", path(op.dest)); put("sha256", op.sha256.hex) }
-            is Op.RemoveFile -> { put("v", "remove_file"); put("path", path(op.path)) }
+            // RFC-THEME-1: the route only when it is not the sync one, so every earlier record reads and writes the same.
+            is Op.PushAsset -> { put("v", "push_asset"); put("src", blob(op.src)); put("dest", path(op.dest)); put("sha256", op.sha256.hex)
+                if (op.route != FileRoute.SYNC) put("route", op.route.name) }
+            is Op.RemoveFile -> { put("v", "remove_file"); put("path", path(op.path)); if (op.route != FileRoute.SYNC) put("route", op.route.name) }
             is Op.RestartHome -> { put("v", "restart_home"); put("component", op.component.flat) }
             is Op.StartActivity -> { put("v", "start_activity"); put("component", op.component.flat); put("wait", op.wait) }
             is Op.Read -> {
@@ -96,8 +99,8 @@ object OpJson {
         "kill_watchdog" -> Op.KillWatchdog(RunToken(o.str("token")))
         "press_home" -> Op.PressHome
         "mkdir" -> Op.Mkdir(RemoteDir.valueOf(o.str("dir")))
-        "push_asset" -> Op.PushAsset(blob(o.obj("src")), path(o.obj("dest")), Sha256(o.str("sha256")))
-        "remove_file" -> Op.RemoveFile(path(o.obj("path")))
+        "push_asset" -> Op.PushAsset(blob(o.obj("src")), path(o.obj("dest")), Sha256(o.str("sha256")), route(o))
+        "remove_file" -> Op.RemoveFile(path(o.obj("path")), route(o))
         "restart_home" -> Op.RestartHome(component(o.str("component")))
         "start_activity" -> Op.StartActivity(component(o.str("component")), o.bool("wait"))
         "read" -> {
@@ -135,6 +138,7 @@ object OpJson {
         present = o["present"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content?.toBooleanStrict(),
     )
 
+    private fun route(o: JsonObject): FileRoute = o.optStr("route")?.let { FileRoute.valueOf(it) } ?: FileRoute.SYNC
     fun path(p: RemotePath): JsonObject = buildJsonObject { put("dir", p.dir.name); put("segments", JsonArray(p.segments.map { JsonPrimitive(it) })) }
     fun path(o: JsonObject): RemotePath = RemotePath(RemoteDir.valueOf(o.str("dir")), o.arr("segments").map { it.jsonPrimitive.content })
     fun blob(b: BlobRef): JsonObject = buildJsonObject { put("sha256", b.sha256.hex); put("size", b.size); put("path", b.path) }

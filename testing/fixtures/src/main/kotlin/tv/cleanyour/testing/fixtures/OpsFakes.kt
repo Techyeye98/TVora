@@ -2,6 +2,7 @@ package tv.cleanyour.testing.fixtures
 
 import tv.cleanyour.core.model.BlobRef
 import tv.cleanyour.core.model.Component
+import tv.cleanyour.core.model.FileRoute
 import tv.cleanyour.core.model.Op
 import tv.cleanyour.core.model.PackageName
 import tv.cleanyour.core.model.Prior
@@ -51,7 +52,7 @@ class FakeOpRenderer(
         is Op.SetHome -> prior.home?.let { Op.SetHome(it) }
         is Op.Install -> if (prior.present == false) Op.Uninstall(op.pkg) else null
         is Op.InstallStream -> if (prior.present == false) Op.Uninstall(op.pkg) else null
-        is Op.PushAsset -> if (prior.present == false) Op.RemoveFile(op.dest) else null
+        is Op.PushAsset -> if (prior.present == false) Op.RemoveFile(op.dest, op.route) else null
         is Op.ArmHomeWatchdog -> Op.KillWatchdog(op.token)
         else -> null
     }
@@ -90,17 +91,19 @@ class FakeConfigTransport(
     private val launcher: Component = Component(PackageName("com.gathin.tvhome"), ".MainActivity"),
 ) : ConfigTransport {
     val writes = CopyOnWriteArrayList<Pair<BlobRef, BlobRef?>>()
+    val routes = CopyOnWriteArrayList<FileRoute>()   // RFC-THEME-1: the route of each write, in order
     @Volatile var resets = 0
         private set
 
     override suspend fun readDigest(session: TvSession): Sha256? = digest
 
-    override fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?): List<Op> {
+    override fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?, route: FileRoute): List<Op> {
         writes += config to wallpaper
+        routes += route
         return listOf(Op.Mkdir(RemoteDir.OVERLAY), Op.RestartHome(launcher))
     }
 
-    override fun resetPlanSteps(): List<Op> {
+    override fun resetPlanSteps(route: FileRoute): List<Op> {
         resets++
         return listOf(Op.RestartHome(launcher))
     }

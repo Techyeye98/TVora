@@ -13,9 +13,10 @@ data class RemotePath(val dir: RemoteDir, val segments: List<String>) {
     val absolute: String get() = dir.path + "/" + segments.joinToString("/") }
 data class BlobRef(val sha256: Sha256, val size: Long, val path: String)   // a file in the BlobStore or a bundled asset on the phone, never a TV path
 enum class ProbeKind { PROPS, PACKAGES, DISABLED, HOME, HOME_FOCUS, TIF_INPUTS, CEC, SETTINGS, IME, SCREENSAVER, SCREENCAP,
-    SHA256_OF_FILE, SHA256_OF_INSTALLED, PACKAGE_DUMP, PERSISTENT, DF_DATA, WATCHDOG_ALIVE, BOOT_ID, BOOT_COMPLETED, LAUNCHER_DIR }
+    SHA256_OF_FILE, SHA256_OF_INSTALLED, PACKAGE_DUMP, PERSISTENT, DF_DATA, WATCHDOG_ALIVE, BOOT_ID, BOOT_COMPLETED, LAUNCHER_DIR,
+    LAUNCHER_FILE_SHA256 }   // RFC-THEME-1: a file of the launcher's folder hashed as the launcher reads it (its ThemeProvider); takes Path
 // R0: 3 the one argument a read takes is typed; the renderer refuses a kind and argument that do not pair
-// (SETTINGS takes Ns; SHA256_OF_FILE takes Path; SHA256_OF_INSTALLED and PACKAGE_DUMP take Pkg; WATCHDOG_ALIVE takes Token; the rest take none)
+// (SETTINGS takes Ns; SHA256_OF_FILE and LAUNCHER_FILE_SHA256 take Path; SHA256_OF_INSTALLED and PACKAGE_DUMP take Pkg; WATCHDOG_ALIVE takes Token; the rest take none)
 sealed interface ReadArg { data class Pkg(val pkg: PackageName) : ReadArg; data class Path(val path: RemotePath) : ReadArg
     data class Token(val token: RunToken) : ReadArg; data class Ns(val ns: SettingsNs) : ReadArg }
 enum class InstallFlag { REPLACE }      // renders -r; no other flag exists
@@ -23,6 +24,13 @@ enum class InstallFlag { REPLACE }      // renders -r; no other flag exists
 // No free text reaches the TV; the curtain app carries its own strings for every value here.
 enum class CurtainStage { SCAN, RESTORE_SAVED, OFF, GROUP_DONE, INSTALL, INSTALLED, FINALE }
 enum class CurtainGroup { NONE, ADVERTS, TRACKING, NOBODY_ASKED, BRAND_EXTRAS, SHOP_DEMO, OTHER }
+// RFC-THEME-1: how a file reaches the launcher's folder (RemoteDir.OVERLAY). SYNC: an adb sync push or an rm, as the
+// shell. THEME_PROVIDER: the launcher's own ThemeProvider (launcher 2.5 and later, authority com.gathin.tvhome.theme)
+// writes or deletes it, so the file belongs to the launcher: the file is staged in TMP by a sync push, written with
+// `content write`, a copy from the staged file is the fallback, and the check reads it back through the provider.
+// Android 11 sets that lock the shell out of Android/data (Xiaomi, TCL) and Android 14, where the shell's file is the
+// shell's and the launcher cannot open it, need it. Only config.json and wallpaper.jpg take it.
+enum class FileRoute { SYNC, THEME_PROVIDER }
 data class Prior(val packageState: EnabledState? = null, val settingValue: String? = null, val home: Component? = null,
     val overlay: ByteArray? = null, val present: Boolean? = null)
 
@@ -41,8 +49,8 @@ sealed interface Op {
     data class KillWatchdog(val token: RunToken) : Op
     data object PressHome : Op
     data class Mkdir(val dir: RemoteDir) : Op
-    data class PushAsset(val src: BlobRef, val dest: RemotePath, val sha256: Sha256) : Op
-    data class RemoveFile(val path: RemotePath) : Op
+    data class PushAsset(val src: BlobRef, val dest: RemotePath, val sha256: Sha256, val route: FileRoute = FileRoute.SYNC) : Op   // RFC-THEME-1: route
+    data class RemoveFile(val path: RemotePath, val route: FileRoute = FileRoute.SYNC) : Op                                         // RFC-THEME-1: route
     data class RestartHome(val component: Component) : Op          // am force-stop + am start, two lines, two steps
     data class StartActivity(val component: Component, val wait: Boolean) : Op
     data class Read(val kind: ProbeKind, val arg: ReadArg? = null) : Op   // R0: 3

@@ -5,6 +5,7 @@ import tv.cleanyour.core.model.Component
 import tv.cleanyour.core.model.CurtainGroup
 import tv.cleanyour.core.model.CurtainStage
 import tv.cleanyour.core.model.EnabledState
+import tv.cleanyour.core.model.FileRoute
 import tv.cleanyour.core.model.InstallFlag
 import tv.cleanyour.core.model.Op
 import tv.cleanyour.core.model.PackageName
@@ -108,6 +109,14 @@ object GoldenCases {
         GoldenCase("57-cue-install", "Curtain cue: the new home screen is being installed", cue(CurtainStage.INSTALL), null),
         GoldenCase("58-cue-installed", "Curtain cue: the new home screen is installed", cue(CurtainStage.INSTALLED), null),
         GoldenCase("59-cue-finale", "Curtain cue: the finale, before Home switches over", cue(CurtainStage.FINALE), null),
+        // RFC-THEME-1: the look through the launcher's ThemeProvider.
+        GoldenCase("60-push-asset-provider", "config.json staged in tmp, written by the launcher's provider (copy as the fallback), checked as the launcher reads it",
+            Op.PushAsset(configBlob, configPath, cfgSha, FileRoute.THEME_PROVIDER), Prior(present = false)),
+        GoldenCase("61-push-asset-provider-wallpaper", "wallpaper.jpg the same way",
+            Op.PushAsset(configBlob, wallpaperPath, cfgSha, FileRoute.THEME_PROVIDER), Prior(present = true)),
+        GoldenCase("62-remove-file-provider", "The launcher's provider deletes its own file", Op.RemoveFile(wallpaperPath, FileRoute.THEME_PROVIDER), null),
+        GoldenCase("63-read-launcher-file-sha256", "A file of the launcher's folder hashed as the launcher reads it",
+            Op.Read(ProbeKind.LAUNCHER_FILE_SHA256, ReadArg.Path(configPath)), null),
     )
 }
 
@@ -128,8 +137,8 @@ object GoldenText {
         is Op.KillWatchdog -> "KillWatchdog token=${op.token.value}"
         Op.PressHome -> "PressHome"
         is Op.Mkdir -> "Mkdir dir=${op.dir.name}"
-        is Op.PushAsset -> "PushAsset src=${blob(op.src)} dest=${op.dest.absolute} sha256=${op.sha256.hex}"
-        is Op.RemoveFile -> "RemoveFile path=${op.path.absolute}"
+        is Op.PushAsset -> "PushAsset src=${blob(op.src)} dest=${op.dest.absolute} sha256=${op.sha256.hex}" + (if (op.route != FileRoute.SYNC) " route=${op.route.name}" else "")
+        is Op.RemoveFile -> "RemoveFile path=${op.path.absolute}" + (if (op.route != FileRoute.SYNC) " route=${op.route.name}" else "")
         is Op.RestartHome -> "RestartHome component=${op.component.flat}"
         is Op.StartActivity -> "StartActivity component=${op.component.flat} wait=${op.wait}"
         is Op.Read -> "Read kind=${op.kind.name}" + when (val a = op.arg) {

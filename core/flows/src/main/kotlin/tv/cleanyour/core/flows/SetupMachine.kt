@@ -1583,8 +1583,8 @@ class SetupMachine(
         fun commandsOf(plan: Plan): List<String> = plan.steps.flatMap { step ->
             val lines = step.rendered.lines.map { it.text }
             val t = step.rendered.transfer
-            lines + listOfNotNull(when (t) {
-                is Transfer.Push -> "sync:${t.dest.absolute} ${t.src.sha256.hex}"
+            listOfNotNull((t as? Transfer.Push)?.let { "sync:${it.dest.absolute} ${it.src.sha256.hex}" }) + lines + listOfNotNull(when (t) {
+                is Transfer.Push -> null
                 is Transfer.Pull -> "sync:${t.src.absolute} ${t.maxBytes}"
                 is Transfer.StreamInstall -> "sync:${t.src.path} ${t.size}"
                 null -> null

@@ -21,11 +21,11 @@ class SignerAndWifiTest {
     private val prober = AdbProber(ProbeFixtures.clock())
     private val bundled = File(Fixtures.repoRoot, "android/platform/src/main/assets/bundled")
     // SHA-256 of the launcher key K1's certificate, as PinnedLauncher.SIGNER_SHA256 holds it.
-    private val k1 = Sha256("576418154bec6505bfc709ccaa6ae85b6e09d98eb89f4a25147ca1b4b0505132")
+    private val k1 = Sha256("fb2895c0f426aca4b74a393530ef1d04aa337841c616e0554f5f42c8a26dd7c9")
 
     @Test fun signerOfTheBundledApks() {
         assertEquals(k1, ApkSigners.signerSha256(File(bundled, "cleanyourtv-launcher.apk").readBytes()))
-        assertEquals(k1, ApkSigners.signerSha256(File(bundled, "cleanyourtv-curtain.apk").readBytes()))
+        assertEquals(Sha256("576418154bec6505bfc709ccaa6ae85b6e09d98eb89f4a25147ca1b4b0505132"), ApkSigners.signerSha256(File(bundled, "cleanyourtv-curtain.apk").readBytes()))
     }
 
     // RF-LAUNCHER-240 F2: Android 8 ignores a v3 block, and the APK Signing Block is not covered by
@@ -33,7 +33,9 @@ class SignerAndWifiTest {
     // into an APK signed with any key. Only a certificate the TV verified counts: v2 required, v3
     // (when present) the same.
     @Test fun onlyACertificateTheTvVerifiedCounts() {
-        val apk = File(bundled, "cleanyourtv-launcher.apk").readBytes()
+        // The unchanged curtain is the fixture with both v2 and v3 scheme blocks.
+        val k1 = Sha256("576418154bec6505bfc709ccaa6ae85b6e09d98eb89f4a25147ca1b4b0505132")
+        val apk = File(bundled, "cleanyourtv-curtain.apk").readBytes()
         val cert = ApkSigners.certificate(apk)!!
         assertEquals(k1, ApkSigners.signerSha256(withPairs(apk) { it == V2 }), "v2 alone is what Android 8 verifies")
         assertNull(ApkSigners.signerSha256(withPairs(apk) { it == V3 }), "a v3 block alone (K1 planted for Android 8)")

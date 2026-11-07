@@ -1,5 +1,12 @@
 package tv.cleanyour.core.flows
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.first
@@ -43,6 +50,7 @@ sealed interface AccessResult {
 // closed the debugging step shows and the probe repeats every 2 s until the TV answers or the
 // person cancels. `expected` is always the TvId, so a different TV at the address never gets a
 // line (D37).
+@OptIn(ExperimentalCoroutinesApi::class)
 class TvAccess(
     private val sessions: SessionManager,
     private val discovery: Discovery,
@@ -51,10 +59,13 @@ class TvAccess(
     private val pollMs: Long = 2_000,
     private val giveUpMs: Long = 10 * 60_000,
     private val wirelessPairing: WirelessPairing? = null,
+    private val searchMs: Long = 15_000,
+    private val searchEveryMs: Long = 30_000,
 ) {
     private val mutableReach = MutableStateFlow<Reach>(Reach.Idle)
     val reach: StateFlow<Reach> = mutableReach.asStateFlow()
     private val cancelGen = MutableStateFlow(0L)
+    private val reconnectLock = Mutex()
 
     fun cancelWaiting() { cancelGen.value = cancelGen.value + 1 }
 
@@ -78,52 +89,123 @@ class TvAccess(
 
     fun live(tvId: TvId): TvSession? = sessions.existing(tvId)?.takeIf { it.state.value is ConnectionState.Connected }
 
-    suspend fun session(tvId: TvId): AccessResult {
+    suspend fun session(tvId: TvId): AccessResult = reconnectLock.withLock { connect(tvId) }
+
+    // Automatic reconnect never sends a public key or opens the debugging sheet.
+    suspend fun quiet(tvId: TvId): TvSession? = withTimeoutOrNull(20_000) {
+        reconnectLock.withLock {
+            live(tvId)?.let { return@withLock it }
+            val tv = tvs.tvs.value.firstOrNull { it.id == tvId } ?: return@withLock null
+            if (!discovery.network().value.onWifi) return@withLock null
+            for (endpoint in tv.endpoints) {
+                if (endpoint is Endpoint.PlainTcp && !discovery.probe5555(endpoint.host)) continue
+                val result = attempt { sessions.openKnown(endpoint, tvId) }.getOrNull()
+                if (result is OpenResult.Ok) { remember(tv, endpoint); return@withLock result.session }
+            }
+            val found = findMoved(tv, emptySet()) ?: return@withLock null
+            remember(tv, found.first)
+            found.second
+        }
+    }
+
+    private suspend fun remember(tv: Tv, endpoint: Endpoint) {
+        val net = discovery.network().value
+        tvs.upsert(current(tv.id, tv).copy(endpoints = listOf(endpoint), debugging = DebugState.ON,
+            lastSeenAt = clock.nowMs(), lastSubnet = net.subnet ?: tv.lastSubnet))
+    }
+
+    private suspend fun connect(tvId: TvId): AccessResult {
         live(tvId)?.let { return AccessResult.Ok(it) }
         val tv = tvs.tvs.value.firstOrNull { it.id == tvId } ?: return AccessResult.Unknown
         val gen = cancelGen.value
         val hosts = tv.endpoints.filterIsInstance<Endpoint.PlainTcp>()
         try {
-            var waited = 0L
-            while (true) {
-                if (cancelGen.value != gen) return AccessResult.Cancelled
-                val net = discovery.network().value
-                if (!net.onWifi || (tv.lastSubnet != null && net.subnet != null && net.subnet != tv.lastSubnet)) {
-                    mutableReach.value = Reach.WrongNetwork(tvId, tv.nickname)
-                } else {
-                    val tls = tv.endpoints.filterIsInstance<Endpoint.Tls>().firstOrNull()
-                    val fresh = if (tls != null && wirelessPairing != null) withTimeoutOrNull(1_500) {
-                        discovery.discover().first { event ->
-                            val found = when (event) { is DiscoveryEvent.Found -> event.tv; is DiscoveryEvent.Updated -> event.tv; else -> null }
-                            found?.host == tls.host && found.connectService != null
+            return coroutineScope {
+                val moved = CompletableDeferred<Pair<Endpoint, TvSession>>()
+                val searcher = launch {
+                    delay(pollMs)
+                    while (true) {
+                        if (discovery.network().value.onWifi) {
+                            findMoved(tv, hosts.map { it.host }.toSet())?.let { moved.complete(it); return@launch }
                         }
-                    } else null
-                    val found = when (fresh) { is DiscoveryEvent.Found -> fresh.tv; is DiscoveryEvent.Updated -> fresh.tv; else -> null }
-                    val open: Endpoint? = tls?.let { wirelessPairing?.endpoint(it.host, found?.connectService?.port ?: it.port) }
-                        ?: hosts.firstOrNull { discovery.probe5555(it.host) }
-                    if (open != null) {
-                        mutableReach.value = Reach.Connecting(tvId, tv.nickname)
-                        when (val r = sessions.open(open, tvId) { fp -> mutableReach.value = Reach.AwaitingAllow(tvId, tv.nickname, fp) }) {
-                            is OpenResult.Ok -> {
-                                tvs.upsert(current(tvId, tv).copy(lastSeenAt = clock.nowMs(), debugging = DebugState.ON,
-                                    endpoints = listOf(open), lastSubnet = net.subnet ?: tv.lastSubnet))
-                                return AccessResult.Ok(r.session)
-                            }
-                            is OpenResult.Failed -> when (r.error) {
-                                is AdbError.Policy.WrongTv, AdbError.Transport.NoShellV2, AdbError.Auth.Denied -> return AccessResult.Failed(r.error)
-                                else -> {}
-                            }
-                        }
+                        delay(searchEveryMs)
                     }
-                    mutableReach.value = Reach.NeedsDebugging(tvId, tv.nickname)
                 }
-                if (waited >= giveUpMs) return AccessResult.Cancelled
-                delay(pollMs)
-                waited += pollMs
+                try { poll(tv, gen, hosts, moved) } finally { searcher.cancel() }
             }
-        } finally {
-            mutableReach.value = Reach.Idle
+        } finally { mutableReach.value = Reach.Idle }
+    }
+
+    private suspend fun poll(tv: Tv, gen: Long, hosts: List<Endpoint.PlainTcp>, moved: CompletableDeferred<Pair<Endpoint, TvSession>>): AccessResult {
+        val tvId = tv.id
+        var waited = 0L
+        while (true) {
+            if (cancelGen.value != gen) return AccessResult.Cancelled
+            val net = discovery.network().value
+            if (moved.isCompleted) {
+                val (endpoint, session) = moved.getCompleted()
+                tvs.upsert(current(tvId, tv).copy(endpoints = listOf(endpoint) + tv.endpoints.filter { it !is Endpoint.PlainTcp },
+                    lastSeenAt = clock.nowMs(), debugging = DebugState.ON, lastSubnet = net.subnet ?: tv.lastSubnet))
+                return AccessResult.Ok(session)
+            }
+            // A changed subnet is a hint, not a reason to stop looking for the same trusted TV.
+            if (!net.onWifi) {
+                mutableReach.value = Reach.WrongNetwork(tvId, tv.nickname)
+            } else {
+                val tls = tv.endpoints.filterIsInstance<Endpoint.Tls>().firstOrNull()
+                val fresh = if (tls != null && wirelessPairing != null) withTimeoutOrNull(1_500) {
+                    discovery.discover().first { event ->
+                        val found = when (event) { is DiscoveryEvent.Found -> event.tv; is DiscoveryEvent.Updated -> event.tv; else -> null }
+                        found?.host == tls.host && found.connectService != null
+                    }
+                } else null
+                val found = when (fresh) { is DiscoveryEvent.Found -> fresh.tv; is DiscoveryEvent.Updated -> fresh.tv; else -> null }
+                val open: Endpoint? = tls?.let { wirelessPairing?.endpoint(it.host, found?.connectService?.port ?: it.port) }
+                    ?: hosts.firstOrNull { discovery.probe5555(it.host) }
+                if (open != null) {
+                    mutableReach.value = Reach.Connecting(tvId, tv.nickname)
+                    val elsewhere = tv.lastSubnet != null && net.subnet != null && tv.lastSubnet != net.subnet
+                    val result = if (elsewhere) sessions.openKnown(open, tvId) else sessions.open(open, tvId) { fp ->
+                        mutableReach.value = Reach.AwaitingAllow(tvId, tv.nickname, fp)
+                    }
+                    when (result) {
+                        is OpenResult.Ok -> {
+                            tvs.upsert(current(tvId, tv).copy(lastSeenAt = clock.nowMs(), debugging = DebugState.ON,
+                                endpoints = listOf(open), lastSubnet = net.subnet ?: tv.lastSubnet))
+                            return AccessResult.Ok(result.session)
+                        }
+                        is OpenResult.Failed -> if (!elsewhere && result.error !is AdbError.Policy.WrongTv &&
+                            (result.error == AdbError.Transport.NoShellV2 || result.error == AdbError.Auth.Denied)) return AccessResult.Failed(result.error)
+                    }
+                }
+                mutableReach.value = Reach.NeedsDebugging(tvId, tv.nickname)
+            }
+            if (waited >= giveUpMs) return AccessResult.Cancelled
+            withTimeoutOrNull(pollMs) { moved.await() }
+            waited += pollMs
         }
+    }
+
+    // Discovery is only a candidate list: only the saved key and TvId can establish this is our TV.
+    private suspend fun findMoved(tv: Tv, saved: Set<String>): Pair<Endpoint, TvSession>? {
+        val tried = HashSet<String>()
+        var hit: Pair<Endpoint, TvSession>? = null
+        withTimeoutOrNull(searchMs) {
+            discovery.discover().firstOrNull { event ->
+                val found = when (event) { is DiscoveryEvent.Found -> event.tv; is DiscoveryEvent.Updated -> event.tv; else -> null }
+                if (found == null || found.host in saved || !tried.add(found.host)) return@firstOrNull false
+                val connectService = found.connectService
+                val endpoint = if (connectService != null && wirelessPairing != null)
+                    wirelessPairing.endpoint(found.host, connectService.port)
+                else if (discovery.probe5555(found.host)) Endpoint.PlainTcp(found.host) else null
+                if (endpoint == null) return@firstOrNull false
+                when (val result = attempt { sessions.openKnown(endpoint, tv.id) }.getOrNull()) {
+                    is OpenResult.Ok -> { hit = endpoint to result.session; true }
+                    else -> false
+                }
+            }
+        }
+        return hit
     }
 
     private fun current(tvId: TvId, fallback: Tv): Tv = tvs.tvs.value.firstOrNull { it.id == tvId } ?: fallback

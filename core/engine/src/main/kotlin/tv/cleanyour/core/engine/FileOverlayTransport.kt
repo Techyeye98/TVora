@@ -2,6 +2,7 @@ package tv.cleanyour.core.engine
 
 import tv.cleanyour.core.model.BlobRef
 import tv.cleanyour.core.model.Component
+import tv.cleanyour.core.model.FileRoute
 import tv.cleanyour.core.model.Op
 import tv.cleanyour.core.model.PackageName
 import tv.cleanyour.core.model.RemoteDir
@@ -24,19 +25,22 @@ class FileOverlayTransport(
 
     override suspend fun readDigest(session: TvSession): Sha256? = prober.fileSha256(session, CONFIG)
 
-    override fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?): List<Op> {
+    // RFC-THEME-1: through the launcher's provider the files are staged in TMP (so that folder is made instead of the
+    // launcher's: a TV that locks the shell out of Android/data refuses the mkdir there, and the launcher's first
+    // start makes its own folder), written by the provider and checked as the launcher reads them.
+    override fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?, route: FileRoute): List<Op> {
         require(config.size in 1..MAX_CONFIG_BYTES) { "config.json must be 1 to $MAX_CONFIG_BYTES bytes" }
         require(wallpaper == null || wallpaper.size in 1..MAX_WALLPAPER_BYTES) { "wallpaper.jpg must be 1 to $MAX_WALLPAPER_BYTES bytes" }
         return listOf(
             Op.StartActivity(launcher, wait = true),
-            Op.Mkdir(RemoteDir.OVERLAY),
-            Op.PushAsset(config, CONFIG, config.sha256),
-            if (wallpaper != null) Op.PushAsset(wallpaper, WALLPAPER, wallpaper.sha256) else Op.RemoveFile(WALLPAPER),
+            Op.Mkdir(if (route == FileRoute.THEME_PROVIDER) RemoteDir.TMP else RemoteDir.OVERLAY),
+            Op.PushAsset(config, CONFIG, config.sha256, route),
+            if (wallpaper != null) Op.PushAsset(wallpaper, WALLPAPER, wallpaper.sha256, route) else Op.RemoveFile(WALLPAPER, route),
             Op.RestartHome(launcher),
         )
     }
 
-    override fun resetPlanSteps(): List<Op> = listOf(Op.RemoveFile(CONFIG), Op.RemoveFile(WALLPAPER), Op.RestartHome(launcher))
+    override fun resetPlanSteps(route: FileRoute): List<Op> = listOf(Op.RemoveFile(CONFIG, route), Op.RemoveFile(WALLPAPER, route), Op.RestartHome(launcher))
 
     companion object {
         val CONFIG = RemotePath(RemoteDir.OVERLAY, listOf("config.json"))

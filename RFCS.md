@@ -11,3 +11,15 @@ com/gathin/tvhome/pinned with its digests pinned, so the differential test still
 of the keys the codec models is unchanged from 2.5 to 2.7 (checked for the bump), so the codec still
 agrees with the bundled launcher on them. Open: port the 2.7 reader (stubs and resources), model the
 new keys the app sets or shows, and carry the rest without the "the launcher ignores it" warning.
+
+
+## TVora reliability backports (0.1.4, 2026-11-07)
+
+Owner-requested changes 5–9 add `SessionManager.openKnown` for signature-only reconnects,
+with TV identity checks before a discovered address replaces the saved one. The normal
+first-connection API retains its behavior. Stalled ADB stream opens now time out and silent
+connections are dropped before resuming interrupted work. `FileRoute` defaults to `SYNC` for
+older journals and restore exports; compatible TVs can stage the two allowed theme files and
+write, verify and undo them through the launcher's existing ThemeProvider. Existing sync plan
+hashes are preserved. Dashboard holds follow resume/pause without changing its visual layout.
+The TV launcher assets, UI animation code and signing identity remain unchanged.

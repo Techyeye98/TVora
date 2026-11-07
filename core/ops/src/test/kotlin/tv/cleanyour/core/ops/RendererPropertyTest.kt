@@ -4,6 +4,7 @@ import tv.cleanyour.core.model.BlobRef
 import tv.cleanyour.core.model.Component
 import tv.cleanyour.core.model.CurtainGroup
 import tv.cleanyour.core.model.CurtainStage
+import tv.cleanyour.core.model.FileRoute
 import tv.cleanyour.core.model.InstallFlag
 import tv.cleanyour.core.model.Op
 import tv.cleanyour.core.model.PackageName
@@ -46,6 +47,8 @@ class RendererPropertyTest {
     private fun token() = RunToken(buildString { repeat(16) { append("0123456789abcdef"[rnd.nextInt(16)]) } })
     private fun fileName() = (lower + "0123456789")[rnd.nextInt(36)] + buildString { repeat(rnd.nextInt(0, 20)) { append((alnum + "._-")[rnd.nextInt(alnum.length + 3)]) } }
     private fun path(dir: RemoteDir = RemoteDir.entries[rnd.nextInt(3)]) = RemotePath(dir, (1..rnd.nextInt(1, 4)).map { fileName() }.let { if (it.any { s -> s.contains("..") }) listOf("x") else it })
+    // RFC-THEME-1: the two files the launcher's provider takes from this app.
+    private fun themeFile() = RemotePath(RemoteDir.OVERLAY, listOf(ThemeProviderLines.FILES.toList()[rnd.nextInt(ThemeProviderLines.FILES.size)]))
     private fun blob(size: Long = rnd.nextLong(1, 200L * 1024 * 1024)) = sha().let { BlobRef(it, size, "blobs/" + it.hex) }
     private fun componentList() = (1..rnd.nextInt(1, 4)).joinToString(":") { comp().flat }
     private fun deviceName() = buildString { repeat(rnd.nextInt(1, 33)) { append((alnum + " ._-")[rnd.nextInt(alnum.length + 4)]) } }.trim().ifEmpty { "TV" }
@@ -66,6 +69,7 @@ class RendererPropertyTest {
         val arg = when (kind) {
             ProbeKind.SETTINGS -> ReadArg.Ns(SettingsNs.entries[rnd.nextInt(3)])
             ProbeKind.SHA256_OF_FILE -> ReadArg.Path(path())
+            ProbeKind.LAUNCHER_FILE_SHA256 -> ReadArg.Path(themeFile())
             ProbeKind.SHA256_OF_INSTALLED, ProbeKind.PACKAGE_DUMP -> ReadArg.Pkg(pkg())
             ProbeKind.WATCHDOG_ALIVE -> ReadArg.Token(token())
             else -> null
@@ -92,8 +96,8 @@ class RendererPropertyTest {
         11 -> Op.KillWatchdog(token())
         12 -> Op.PressHome
         13 -> Op.Mkdir(RemoteDir.entries[rnd.nextInt(3)])
-        14 -> blob().let { Op.PushAsset(it, path(), it.sha256) }
-        15 -> Op.RemoveFile(path())
+        14 -> blob().let { if (rnd.nextBoolean()) Op.PushAsset(it, path(), it.sha256) else Op.PushAsset(it, themeFile(), it.sha256, FileRoute.THEME_PROVIDER) }
+        15 -> if (rnd.nextBoolean()) Op.RemoveFile(path()) else Op.RemoveFile(themeFile(), FileRoute.THEME_PROVIDER)
         16 -> Op.RestartHome(comp())
         17 -> Op.StartActivity(comp(), rnd.nextBoolean())
         18 -> read()
@@ -117,6 +121,17 @@ class RendererPropertyTest {
                 assertTrue(Watchdog.matches(WatchdogVariant.NOHUP_SETSID, r.lines[1].text, op.stock, op.seconds, op.token))
                 return@repeat
             }
+            // RFC-THEME-1: the provider's write is its template filled with the file, after the push to its staging file.
+            if (op is Op.PushAsset && op.route == FileRoute.THEME_PROVIDER) {
+                assertTrue(ThemeProviderLines.matchesWrite(r.lines.single().text, op.dest), r.lines.single().text)
+                assertEquals(Transfer.Push(op.src, ThemeProviderLines.stage(op.dest), 0x1A4), r.transfer)
+                assertTrue(ThemeProviderLines.matchesRead(renderer.render(r.verify!!).lines.single().text, op.dest))
+                return@repeat
+            }
+            if (op is Op.Read && op.kind == ProbeKind.LAUNCHER_FILE_SHA256) {
+                assertTrue(ThemeProviderLines.matchesRead(r.lines.single().text, (op.arg as ReadArg.Path).path), r.lines.single().text)
+                return@repeat
+            }
             for (line in r.lines) {
                 lines++
                 val text = line.text
@@ -132,7 +147,7 @@ class RendererPropertyTest {
             }
             if (op is Op.Settle) assertTrue(r.lines.isEmpty() && r.transfer == null)
             if (op is Op.PushAsset || op is Op.InstallStream) assertTrue(r.lines.isEmpty() && r.transfer != null)
-            r.verify?.let { v -> renderer.render(v).lines.forEach { ShellTokens.assertLine(it.text) } }
+            r.verify?.takeUnless { it.kind == ProbeKind.LAUNCHER_FILE_SHA256 }?.let { v -> renderer.render(v).lines.forEach { ShellTokens.assertLine(it.text) } }
         }
         assertTrue(lines > 3500)
     }
@@ -222,6 +237,13 @@ class RendererPropertyTest {
             Op.Read(ProbeKind.PACKAGE_DUMP, ReadArg.Ns(SettingsNs.SECURE)),
             Op.Read(ProbeKind.WATCHDOG_ALIVE, ReadArg.Pkg(launcher.pkg)),
             Op.Read(ProbeKind.WATCHDOG_ALIVE),
+            // RFC-THEME-1: the launcher's provider takes only config.json and wallpaper.jpg in its folder.
+            Op.PushAsset(BlobRef(Sha256("a".repeat(64)), 10, "p"), RemotePath(RemoteDir.TMP, listOf("config.json")), Sha256("a".repeat(64)), FileRoute.THEME_PROVIDER),
+            Op.PushAsset(BlobRef(Sha256("a".repeat(64)), 10, "p"), RemotePath(RemoteDir.OVERLAY, listOf("theme_revision")), Sha256("a".repeat(64)), FileRoute.THEME_PROVIDER),
+            Op.PushAsset(BlobRef(Sha256("a".repeat(64)), 10, "p"), RemotePath(RemoteDir.OVERLAY, listOf("wallpapers", "a.jpg")), Sha256("a".repeat(64)), FileRoute.THEME_PROVIDER),
+            Op.RemoveFile(RemotePath(RemoteDir.RESTORE, listOf("wallpaper.jpg")), FileRoute.THEME_PROVIDER),
+            Op.Read(ProbeKind.LAUNCHER_FILE_SHA256, ReadArg.Path(RemotePath(RemoteDir.OVERLAY, listOf("order.txt")))),
+            Op.Read(ProbeKind.LAUNCHER_FILE_SHA256),
             Op.Disable(PackageName("com.android.systemui")),
             Op.Disable(PackageName("com.android.providers.media.module")),
             Op.Disable(PackageName("com.android.wifi.resources")),

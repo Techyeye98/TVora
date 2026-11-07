@@ -140,7 +140,8 @@ class HomeScreenMachine(
             ?: LauncherConfigCodec.builtInDefaults.hiddenApps.map(::PackageName)
         // The stored snapshot cannot say which apps are launchable, so the rule without that
         // answer applies: never a home screen, a provider or a system-only package.
-        val apps = (snap?.let { DockCandidates.of(it, null, profile, d.facts) } ?: emptySet())
+        val launchable = d.access.live(tvId)?.let { s -> (d.prober as? tv.cleanyour.core.probe.LaunchableApps)?.let { q -> attempt { q.launchable(s) }.getOrNull() } }
+        val apps = (snap?.let { DockCandidates.of(it, launchable, profile, d.facts) } ?: emptySet())
             .map { AppChoice(it, d.nameOf(it, packages[it]?.label)) }.sortedBy { it.name.lowercase() }
         // The dock as the TV shows it: an app no longer there (gone, switched off) is skipped and the
         // later ones move up a slot, as the launcher does.

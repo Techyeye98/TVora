@@ -38,5 +38,7 @@ enum class ConfigTransportKind { FILE_OVERLAY, PROVIDER }
 interface ConfigTransport {   // R0: 1 moved from :core:engine: the planner emits its steps; implementations stay in :core:engine (W3)
     val kind: ConfigTransportKind
     suspend fun readDigest(session: TvSession): Sha256?
-    fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?): List<Op>   // config = LauncherConfigCodec.encode(doc) stored in the BlobStore; mkdir, push, verify read, restart home
-    fun resetPlanSteps(): List<Op> }
+    // RFC-THEME-1: `route`, how the files reach the launcher's folder (FileRoute); the planner picks THEME_PROVIDER where
+    // the TV has `content write` and the launcher on it has the provider. SYNC is every earlier plan's.
+    fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?, route: FileRoute = FileRoute.SYNC): List<Op>   // config = LauncherConfigCodec.encode(doc) stored in the BlobStore; mkdir, push, verify read, restart home
+    fun resetPlanSteps(route: FileRoute = FileRoute.SYNC): List<Op> }

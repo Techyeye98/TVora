@@ -1,6 +1,9 @@
 package tv.cleanyour.core.flows
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import tv.cleanyour.core.engine.RunState
@@ -56,6 +59,8 @@ sealed interface ManageIntent {
     data object OpenRelease : ManageIntent
     data object AppSettings : ManageIntent
     data object HelpAddTv : ManageIntent
+    data object Resumed : ManageIntent
+    data object Paused : ManageIntent
 }
 
 class ManageMachine(
@@ -69,6 +74,9 @@ class ManageMachine(
     private data class Thumb(val tvId: TvId, val png: ByteArray?)
     private data class Reconnected(val ok: Boolean)
     private data object Reconnecting
+    private var visible = false
+    private var held: Pair<tv.cleanyour.core.session.TvSession, tv.cleanyour.core.session.SessionHold>? = null
+    private var autoJob: Job? = null
 
     init {
         scope.launch {
@@ -92,6 +100,7 @@ class ManageMachine(
             }
         }
         scope.launch { thumbnail() }
+        scope.launch { try { awaitCancellation() } finally { autoJob?.cancel(); releaseHold() } }
         if (d.store.updateCheck) scope.launch {
             val version = attempt { d.updates.latestNewerThan(d.appVersion) }.getOrNull()
             if (!version.isNullOrEmpty()) send(Update(UpdateCheck.Available(version)))
@@ -116,13 +125,20 @@ class ManageMachine(
     override fun handle(event: Any, before: ManageState, after: ManageState) {
         val id = after.current?.id
         when (event) {
-            is ManageIntent.Select -> scope.launch { thumbnail() }
+            is Loaded -> {
+                if (visible && !after.offline) keepHold()
+                if (visible && after.offline) autoReconnect()
+            }
+            ManageIntent.Resumed -> { visible = true; keepHold(); if (after.offline) autoReconnect() }
+            ManageIntent.Paused -> { visible = false; autoJob?.cancel(); releaseHold() }
+            is ManageIntent.Select -> { autoJob?.cancel(); releaseHold(); keepHold(); if (after.offline) autoReconnect(); scope.launch { thumbnail() } }
             ManageIntent.RefreshThumbnail -> scope.launch { thumbnail() }
             ManageIntent.Reconnect -> if (id != null && !after.reconnecting) scope.launch {
+                autoJob?.cancel()
                 send(Reconnecting)
                 val ok = d.access.session(id) is AccessResult.Ok
                 send(Reconnected(ok))
-                if (ok) thumbnail()
+                if (ok) { keepHold(); thumbnail() }
             }
             is ManageIntent.Open -> if (event.section != ManageSection.MODULES || d.store.addOns) id?.let { effect(ManageEffect.Navigate("${event.section.key}/${it.value}")) }
             ManageIntent.SetUpAnother -> effect(ManageEffect.Navigate("setup"))
@@ -131,6 +147,30 @@ class ManageMachine(
             ManageIntent.AppSettings -> effect(ManageEffect.Navigate("appsettings"))
             ManageIntent.HelpAddTv -> id?.let { effect(ManageEffect.Navigate("report/tv/${it.value}")) }
             else -> {}
+        }
+    }
+
+    private fun keepHold() {
+        if (!visible) return
+        val session = state.value.current?.id?.let { d.access.live(it) } ?: return
+        if (held?.first === session) return
+        releaseHold()
+        held = session to session.hold()
+    }
+
+    private fun releaseHold() { held?.second?.close(); held = null }
+
+    private fun autoReconnect() {
+        val id = state.value.current?.id ?: return
+        if (!visible || autoJob?.isActive == true) return
+        autoJob = scope.launch {
+            repeat(21) { attempt ->
+                if (attempt > 0) delay(15_000)
+                if (!visible || !state.value.offline || state.value.reconnecting || state.value.current?.id != id) return@launch
+                if (d.access.quiet(id) != null) {
+                    send(Reconnected(true)); keepHold(); thumbnail(); return@launch
+                }
+            }
         }
     }
 

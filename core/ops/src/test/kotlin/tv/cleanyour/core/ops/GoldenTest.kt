@@ -3,6 +3,8 @@ package tv.cleanyour.core.ops
 import tv.cleanyour.core.model.Op
 import tv.cleanyour.core.model.PackageName
 import tv.cleanyour.core.model.Prior
+import tv.cleanyour.core.model.RemoteDir
+import tv.cleanyour.core.model.RemotePath
 import tv.cleanyour.core.model.SettingKey
 import tv.cleanyour.testing.fixtures.Fixtures
 import java.io.File
@@ -40,6 +42,8 @@ class GoldenTest {
             val r = ShellRenderer(c.variant).render(c.op)
             for (line in r.lines) {
                 if (c.op is Op.ArmHomeWatchdog && line === r.lines.last()) continue   // the one multi-command template, checked by WatchdogTest
+                // RFC-THEME-1: the launcher provider's write and read, templates checked by ThemeProviderLinesTest.
+                if (ThemeProviderLines.FILES.any { f -> RemotePath(RemoteDir.OVERLAY, listOf(f)).let { ThemeProviderLines.matchesWrite(line.text, it) || ThemeProviderLines.matchesRead(line.text, it) } }) continue
                 ShellTokens.assertLine(line.text)
                 assertTrue(ShellTokens.tokenize(line.text).isNotEmpty(), c.name)
             }

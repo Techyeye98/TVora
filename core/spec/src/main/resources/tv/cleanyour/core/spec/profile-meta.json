@@ -1086,8 +1086,8 @@
       "stockLaunchers": ["com.google.android.apps.tv.launcherx"],
       "liveTv": null,
       "setupWraith": "com.google.android.tungsten.setupwraith",
-      "quirks": ["HOME_TAKEOVER_SETUPWRAITH"],
-      "neverDisable": ["com.realtek.dtv", "com.realtek.tv.atv", "com.realtek.tv", "com.apps.ota", "com.apps.authota", "com.realsil.ota"],
+      "quirks": ["HOME_TAKEOVER_SETUPWRAITH", "STOCK_LAUNCHER_KEEP_ENABLED"],
+      "neverDisable": ["com.realtek.dtv", "com.realtek.tv.atv", "com.realtek.tv", "com.apps.ota", "com.apps.authota", "com.realsil.ota", "com.google.android.apps.tv.launcherx", "com.google.android.tungsten.setupwraith"],
       "suggestedDock": [],
       "tested": { "by": "Keneth Lallemand (PR #266)", "firmware": "UKR1.260612.001", "daysLivedWith": null, "rebootTested": false },
       "groups": {
@@ -1909,7 +1909,7 @@
       "liveTv": "com.mediatek.wwtv.tvcenter",
       "setupWraith": "com.google.android.tungsten.setupwraith",
       "quirks": ["HOME_TAKEOVER_SETUPWRAITH"],
-      "neverDisable": ["com.smartdevice.global.service", "com.skyworth.backligthadjust", "com.smartdevice.bleconnectservice", "com.mediatek.wwtv.tvcenter"],
+      "neverDisable": ["com.smartdevice.global.service", "com.skyworth.backligthadjust", "com.smartdevice.bleconnectservice", "com.mediatek.wwtv.tvcenter", "com.smartdevice.dailymanage", "com.smartdevice.dailyshortcut", "com.smartdevice.myapp"],
       "suggestedDock": [],
       "tested": { "by": "hathechi", "firmware": "UKNV.260211.001", "daysLivedWith": null, "rebootTested": false },
       "groups": {
@@ -2824,7 +2824,7 @@
       "liveTv": "com.tcl.tv",
       "setupWraith": null,
       "quirks": [],
-      "neverDisable": ["com.tcl.tv", "com.tcl.settings", "com.tcl.guard", "com.tcl.autopair", "com.tcl.providers.config", "com.tcl.TFDS.service", "com.tcl.dashboard.service", "com.tcl.packageinstaller.service.renew", "com.tcl.xian.StartandroidService", "com.sohu.inputmethod.sogou.tv", "com.tcl.ui_mediaCenter", "com.android.packageinstaller", "com.tcl.cyberui"],
+      "neverDisable": ["com.tcl.tv", "com.tcl.settings", "com.tcl.guard", "com.tcl.autopair", "com.tcl.providers.config", "com.tcl.TFDS.service", "com.tcl.dashboard.service", "com.tcl.packageinstaller.service.renew", "com.tcl.xian.StartandroidService", "com.sohu.inputmethod.sogou.tv", "com.tcl.ui_mediaCenter", "com.android.packageinstaller", "com.tcl.cyberui", "com.tcl.versionUpdateApp"],
       "suggestedDock": [],
       "tested": { "by": null, "firmware": "PPR1.180610.011", "daysLivedWith": null, "rebootTested": false },
       "groups": {
@@ -2955,7 +2955,7 @@
       "liveTv": "com.tcl.tv",
       "setupWraith": "com.google.android.tungsten.setupwraith",
       "quirks": ["HOME_TAKEOVER_SETUPWRAITH"],
-      "neverDisable": ["com.tcl.versionUpdateApp"],
+      "neverDisable": ["com.tcl.versionUpdateApp", "com.tcl.xian.StartandroidService"],
       "suggestedDock": [],
       "tested": { "by": "www-r3m1x (PR #423)", "firmware": "RP1A.200622.001 AR09 (V8-R51MT05-LF1V620)", "daysLivedWith": 1, "rebootTested": true },
       "groups": {

@@ -58,6 +58,12 @@ object Denylist {
         "com.heytap.tv.remotediagnosing" to "it is part of the remote control service",
         "mitv.service" to "it runs the Xiaomi TV's remote keys and TV services; Settings can stop working without it",
         "com.tcl.channelplus" to "it provides TCL Live's channels, a TV input",
+        // Issue #1378 (Skyworth SWTV-22AE-FHD): the remote's keys on the Skyworth platform (Skyworth,
+        // Sharp, Philips and Thomson sets). Every list that names the global key service keeps it on,
+        // and every list but the 22AE one keeps the quick menu on, the receiver of the remote's global
+        // buttons; on the 22AE the custom (Daily) button needs it.
+        "com.smartdevice.global.service" to "it runs the remote's hot keys on this TV",
+        "com.smartdevice.dailyshortcut" to "it runs the remote's quick menu and extra buttons on this TV",
     ) + vendorSetupWizards.associateWith { REASON_VENDOR_WIZARD } + vendorHomes.associateWith { REASON_VENDOR_HOME }
 
     val prefixes: Map<String, String> = linkedMapOf(

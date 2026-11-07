@@ -232,6 +232,10 @@ fun AppRoot(graph: AppGraph, start: Dest, onExit: () -> Unit) {
                     val m = rememberMachine("manage:${key.tvId}") { graph.manage(it, key.tvId?.let(::TvId)) }
                     val state by m.state.collectAsStateWithLifecycle()
                     LaunchedEffect(m) { m.effects.collect { onManageEffect(it) } }
+                    androidx.lifecycle.compose.LifecycleResumeEffect(m) {
+                        m.dispatch(tv.cleanyour.core.flows.ManageIntent.Resumed)
+                        onPauseOrDispose { m.dispatch(tv.cleanyour.core.flows.ManageIntent.Paused) }
+                    }
                     ManageScreen(state, m::dispatch)
                 }
                 entry<Dest.SwitchedOff> { key ->

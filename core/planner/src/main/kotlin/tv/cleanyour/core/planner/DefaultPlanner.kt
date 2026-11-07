@@ -6,6 +6,7 @@ import tv.cleanyour.core.model.Component
 import tv.cleanyour.core.model.CurtainGroup
 import tv.cleanyour.core.model.CurtainStage
 import tv.cleanyour.core.model.EnabledState
+import tv.cleanyour.core.model.FileRoute
 import tv.cleanyour.core.model.GroupDefault
 import tv.cleanyour.core.model.InstallFlag
 import tv.cleanyour.core.model.LauncherArtifact
@@ -29,6 +30,7 @@ import tv.cleanyour.core.ops.FailurePolicy
 import tv.cleanyour.core.ops.OpRenderer
 import tv.cleanyour.core.ops.RenderRefused
 import tv.cleanyour.core.ops.Rendered
+import tv.cleanyour.core.ops.ThemeProviderLines
 import tv.cleanyour.core.ops.UndoOrder
 import tv.cleanyour.core.spec.AppNames
 import tv.cleanyour.core.spec.FactsTable
@@ -252,7 +254,9 @@ class DefaultPlanner(
             val config = req.config
             if (choices.takeover && config != null && (launcherSteps || installed(launcher.pkg))) {
                 val overlayGone = !installed(launcher.pkg) || replacesLauncher   // a fresh install, or the uninstall took its files
-                look(config, req.wallpaper, overlayGone, FailurePolicy.CONTINUE)
+                // RFC-THEME-1: the launcher the look reaches is the one this plan installs, else the one on the TV.
+                val version = if (launcherSteps) req.launcher.versionCode else state(launcher.pkg)?.versionCode
+                look(config, req.wallpaper, overlayGone, FailurePolicy.CONTINUE, themeRoute(version))
             }
             if (choices.takeover) takeover(req.launcher, profile, stockLaunchers, launcherSteps, choices.wizardWifi)
             homeSwitchRows()
@@ -546,8 +550,16 @@ class DefaultPlanner(
 
         fun applyTheme(config: BlobRef, wallpaper: BlobRef?) {
             if (!installed(launcher.pkg)) { refuse("the new home screen is not installed"); return }
-            look(config, wallpaper, overlayGone = false, pushPolicy = FailurePolicy.STOP_AND_ROLLBACK)
+            look(config, wallpaper, overlayGone = false, pushPolicy = FailurePolicy.STOP_AND_ROLLBACK, route = themeRoute(state(launcher.pkg)?.versionCode))
         }
+
+        // RFC-THEME-1 (issues #1279, #1649, #1094, #1290): the look goes through the launcher's ThemeProvider where
+        // the TV has `content write` (Android 10 and later) and the launcher has the provider (2.5, versionCode 6,
+        // and later); a versionCode not read (0 or none) is the launcher this app bundles, the LookGates rule. Else
+        // the sync push as before: Android 8 and 9, where it works (the Mi TVs of the maintainer), and an older launcher.
+        fun themeRoute(launcherVersion: Long?): FileRoute =
+            if (snapshot.facts.sdk >= ThemeProviderLines.MIN_SDK && (launcherVersion == null || launcherVersion <= 0L || launcherVersion >= ThemeProviderLines.FIRST_VERSION_CODE))
+                FileRoute.THEME_PROVIDER else FileRoute.SYNC
 
         // The transport's config.json steps (D15) with their priors and narration, shared by ApplyTheme
         // and Setup (RFC-DOCK-1). `overlayGone`: the launcher's folder holds nothing of ours before this
@@ -555,9 +567,9 @@ class DefaultPlanner(
         // both pushes record that the files were absent and Undo everything removes them again.
         // Otherwise the config prior is the overlay the probe read and the wallpaper's is unknown.
         // `pushPolicy` is the pushes' failure policy; the other steps always CONTINUE.
-        fun look(config: BlobRef, wallpaper: BlobRef?, overlayGone: Boolean, pushPolicy: FailurePolicy) {
+        fun look(config: BlobRef, wallpaper: BlobRef?, overlayGone: Boolean, pushPolicy: FailurePolicy, route: FileRoute = FileRoute.SYNC) {
             val ops = try {
-                configTransport.writePlanSteps(config, wallpaper)
+                configTransport.writePlanSteps(config, wallpaper, route)
             } catch (e: IllegalArgumentException) {
                 refuse("the look cannot be sent to the TV: ${e.message}"); return
             }
@@ -620,7 +632,8 @@ class DefaultPlanner(
             // the TV; the same steps, priors and failure policy as ApplyTheme. Without the new home
             // screen on the TV there is nothing to read it, so the add goes without it.
             val config = req.config
-            if (config != null && installed(launcher.pkg)) look(config, req.wallpaper, overlayGone = false, pushPolicy = FailurePolicy.STOP_AND_ROLLBACK)
+            if (config != null && installed(launcher.pkg)) look(config, req.wallpaper, overlayGone = false, pushPolicy = FailurePolicy.STOP_AND_ROLLBACK,
+                route = themeRoute(state(launcher.pkg)?.versionCode))
             step(Op.PressHome, null, GROUP_MODULE, "Showing the home screen", FailurePolicy.CONTINUE)
         }
 
@@ -697,8 +710,9 @@ class DefaultPlanner(
                         val launcherStays = installed(launcher.pkg) && !(removeLauncher && launcher.pkg in ourApps)
                         if (!launcherStays || t.path.dir != RemoteDir.OVERLAY || c.prior?.present != false) continue
                         val last = changes.filter { UndoOrder.target(it.op) == t }.maxWithOrNull(UndoOrder.CHRONOLOGICAL)
-                        if (last?.op !is Op.PushAsset) continue
-                        step(Op.RemoveFile(t.path), null, GROUP_UNDO, "Clearing the look", FailurePolicy.CONTINUE)
+                        val pushed = last?.op as? Op.PushAsset ?: continue
+                        // RFC-THEME-1: a file the provider wrote is the launcher's, so the provider removes it too.
+                        step(Op.RemoveFile(t.path, pushed.route), null, GROUP_UNDO, "Clearing the look", FailurePolicy.CONTINUE)
                         clearedLook = true
                     }
                     null -> {}

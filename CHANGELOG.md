@@ -1,5 +1,14 @@
 # TVora changelog
 
+## 0.1.4 (unreleased)
+
+- Reconnect to saved TVs at changed addresses/subnets using their trusted key and TV identity; keep the dashboard connection only while resumed.
+- Bound stalled ADB stream opens and discard silent connections so interrupted operations can pause and reconnect safely.
+- Deliver and verify themes through the launcher's ThemeProvider on compatible Android versions; retain the existing route on Android 9.
+- Offer launchable system apps in the dock list and exclude launcher placeholders and background-only services.
+- Protect required Skyworth remote services, TCL update helpers and Kalley home/setup packages.
+- Preserve current visuals, motion, TV launcher assets and signing identity.
+
 ## 0.1.3 (unreleased)
 
 - Use Android 9-compatible APIs for ADB public keys and restore ZIP timestamps.

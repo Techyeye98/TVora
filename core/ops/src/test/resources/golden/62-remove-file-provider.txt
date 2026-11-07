@@ -1,0 +1,11 @@
+# The launcher's provider deletes its own file
+op: RemoveFile path=/sdcard/Android/data/com.gathin.tvhome/files/wallpaper.jpg route=THEME_PROVIDER
+privilege: COMMUNITY
+timeout_ms: 30000
+stdout_cap: 65536
+line: 'content' 'delete' '--uri' 'content://com.gathin.tvhome.theme/wallpaper.jpg'
+transfer: none
+verify: Read kind=LAUNCHER_FILE_SHA256 path=/sdcard/Android/data/com.gathin.tvhome/files/wallpaper.jpg
+verify_line: content read --uri content://com.gathin.tvhome.theme/wallpaper.jpg | sha256sum
+prior: none
+inverse: none

@@ -42,7 +42,9 @@ class FakeProber(
     @Volatile var freeMb: Int = 900,
     @Volatile var refusesInstall: Boolean = false,
     @Volatile var bootIdValue: String = "fake-boot-1",
-) : Prober {
+) : Prober, tv.cleanyour.core.probe.LaunchableApps {
+    var launchableApps: Set<PackageName>? = null
+    override suspend fun launchable(session: TvSession): Set<PackageName> = launchableApps ?: throw tv.cleanyour.core.probe.ProbeException(ProbeStage.LAUNCHER, "no answer")
     val fileHashes = ConcurrentHashMap<String, Sha256>()
     val installedHashes = ConcurrentHashMap<PackageName, Sha256>()
     val liveWatchdogs: MutableSet<RunToken> = ConcurrentHashMap.newKeySet()

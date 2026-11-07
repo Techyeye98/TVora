@@ -3,6 +3,7 @@ package tv.cleanyour.adb.session
 import kotlinx.coroutines.withTimeoutOrNull
 import tv.cleanyour.adb.wire.AdbConnection
 import tv.cleanyour.adb.wire.AdbService
+import tv.cleanyour.adb.wire.AdbStream
 import tv.cleanyour.adb.wire.AdbStreamReader
 import tv.cleanyour.adb.wire.ShellPacket
 import tv.cleanyour.adb.wire.ShellV2
@@ -215,11 +216,18 @@ internal suspend fun <T> bounded(ms: Long, phase: String, block: suspend () -> T
     return r.value
 }
 
+// Issue #616: the OPEN of a stream waited for the TV's OKAY with no bound. A TV that left the Wi-Fi
+// without closing the socket never answers it, so the step hung with the session's lock held (the
+// keepalive that would notice could not run), the run sat on the Working screen for minutes and
+// Stop, which acts between steps, did nothing, until the app was closed. Every open is bounded now,
+// by the call's idle window, and a TV that does not answer is a timeout like any other.
+internal suspend fun AdbConnection.openBounded(service: AdbService, ms: Long): AdbStream = bounded(ms, "open") { openStream(service) }
+
 // shell v2 over one stream with the ExecSpec's two clocks and two caps (ARCHITECTURE 3.3, 3.7).
 internal object Exec {
     suspend fun run(conn: AdbConnection, line: ShellLine, spec: ExecSpec, clock: Clock): ExecResult {
         val start = clock.monotonicMs()
-        val stream = conn.openStream(AdbService.ShellV2(line))
+        val stream = conn.openBounded(AdbService.ShellV2(line), minOf(spec.idleTimeoutMs, spec.timeoutMs))
         try {
             return bounded(spec.timeoutMs, "exec-total") {
                 val reader = AdbStreamReader(stream)

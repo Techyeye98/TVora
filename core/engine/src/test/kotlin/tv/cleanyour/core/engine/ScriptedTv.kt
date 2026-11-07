@@ -18,6 +18,7 @@ import tv.cleanyour.core.model.HomeClaimant
 import tv.cleanyour.core.model.HomeResolution
 import tv.cleanyour.core.model.PackageName
 import tv.cleanyour.core.model.PackageState
+import tv.cleanyour.core.model.RemoteDir
 import tv.cleanyour.core.model.RemotePath
 import tv.cleanyour.core.model.RunToken
 import tv.cleanyour.core.model.SettingKey
@@ -26,6 +27,7 @@ import tv.cleanyour.core.model.ShellLine
 import tv.cleanyour.core.model.Snapshot
 import tv.cleanyour.core.model.SnapshotReason
 import tv.cleanyour.core.model.TvId
+import tv.cleanyour.core.ops.ThemeProviderLines
 import tv.cleanyour.core.probe.ProbeStage
 import tv.cleanyour.core.probe.Prober
 import tv.cleanyour.core.session.BootOutcome
@@ -74,6 +76,11 @@ class ScriptedTv(initial: Snapshot = Samples.miTvSnapshot()) : TvSession {
     var requestedPermissions: Map<PackageName, List<String>> = emptyMap()   // printed under "requested permissions:" in the package's dump
     var answer: ((String) -> ExecResult?)? = null              // a scripted answer for a line (normalized), before the model's own
 
+    var themeProvider = true
+    var shellLockedOut = false
+    var launcherRefusesShellFiles = false
+    val shellOwned = mutableSetOf<String>()
+
     override val tvId: TvId = initial.tvId
     override val identity: TvIdentity = TvIdentity(tvId, facts.serialLast4, facts.device, facts.model, facts.sdk, facts.adbSecure, facts.adbFeatures, 1024 * 1024)
     private val connected = ConnectionState.Connected(Endpoint.PlainTcp("192.0.2.10"), facts.adbFeatures, 1024 * 1024)
@@ -111,7 +118,33 @@ class ScriptedTv(initial: Snapshot = Samples.miTvSnapshot()) : TvSession {
             "    User 0: ceDataInode=1 installed=true hidden=false suspended=false stopped=false notLaunched=false enabled=$enabled instant=false virtual=false\n"
     }
 
+    private fun overlay(path: String) = path.startsWith(RemoteDir.OVERLAY.path + "/")
+
+    // The provider's two templates, matched on the raw line (they carry their own quoting).
+    private fun themeLine(lineText: String): ExecResult? {
+        for (name in ThemeProviderLines.FILES) {
+            val dest = RemotePath(RemoteDir.OVERLAY, listOf(name))
+            if (ThemeProviderLines.matchesWrite(lineText, dest)) {
+                val stage = ThemeProviderLines.stage(dest).absolute
+                if (!shellLockedOut) { files.remove(dest.absolute); shellOwned -= dest.absolute }
+                val bytes = files.remove(stage)
+                return when {
+                    bytes == null -> fail("cp: $stage: No such file or directory")
+                    themeProvider -> { files[dest.absolute] = bytes; shellOwned -= dest.absolute; ok() }
+                    shellLockedOut -> fail("cp: ${dest.absolute}: Permission denied")
+                    else -> { files[dest.absolute] = bytes; shellOwned += dest.absolute; ok() }
+                }
+            }
+            if (ThemeProviderLines.matchesRead(lineText, dest)) {
+                val bytes = files[dest.absolute]?.takeIf { themeProvider && !(launcherRefusesShellFiles && dest.absolute in shellOwned) }
+                return ok("${sha256Of(bytes ?: ByteArray(0)).hex}  -\n")
+            }
+        }
+        return null
+    }
+
     fun run(lineText: String): ExecResult {
+        themeLine(lineText)?.let { return it }
         val line = Recording.normalize(lineText)
         val tokens = line.split(' ')
         fun pkg(i: Int) = PackageName(tokens[i])
@@ -139,9 +172,17 @@ class ScriptedTv(initial: Snapshot = Samples.miTvSnapshot()) : TvSession {
             line.startsWith("pgrep -f ") -> { val re = Regex(line.removePrefix("pgrep -f ")); val hits = watchdogs.filter { re.containsMatchIn(watchdogLine(it)) }; if (hits.isNotEmpty()) ok("4321\n") else ExecResult(1, "", "", false, 1) }
             line.startsWith("pkill -f ") -> { val re = Regex(line.removePrefix("pkill -f ")); val hits = watchdogs.filter { re.containsMatchIn(watchdogLine(it)) }; if (hits.isNotEmpty()) { watchdogs -= hits.toSet(); ok() } else ExecResult(1, "", "", false, 1) }
             line.startsWith("touch ") -> { files[tokens[1]] = ByteArray(0); ok() }
+            line.startsWith("sha256sum ") && shellLockedOut && overlay(tokens[1]) -> fail("sha256sum: ${tokens[1]}: Permission denied")
             line.startsWith("sha256sum ") -> files[tokens[1]]?.let { ok("${sha256Of(it).hex}  ${tokens[1]}\n") } ?: fail("sha256sum: ${tokens[1]}: No such file or directory")
-            line.startsWith("rm -f ") -> { files.remove(tokens[2]); ok() }
+            line.startsWith("rm -f ") && shellLockedOut && overlay(tokens[2]) -> fail("rm: ${tokens[2]}: Permission denied")
+            line.startsWith("rm -f ") -> { files.remove(tokens[2]); shellOwned -= tokens[2]; ok() }
+            line.startsWith("mkdir -p ") && shellLockedOut && overlay(tokens[2] + "/") -> fail("mkdir: ${tokens[2]}: Permission denied")
             line.startsWith("mkdir -p ") -> ok()
+            // RFC-THEME-1: the content tool exits 0 and prints its errors.
+            line.startsWith("content delete --uri content://${ThemeProviderLines.AUTHORITY}/") -> {
+                if (themeProvider) files.remove(RemoteDir.OVERLAY.path + "/" + tokens[3].substringAfterLast('/'))
+                ok(if (themeProvider) "" else "Error while accessing provider:${ThemeProviderLines.AUTHORITY}\n")
+            }
             // am start -W reports "Status: ok" when the activity came up (launcher v2.4.0's check); a
             // package the TV does not have fails the way a real TV does, and startFails makes an
             // installed one fail the way a crashing activity does.
@@ -201,7 +242,10 @@ class ScriptedTv(initial: Snapshot = Samples.miTvSnapshot()) : TvSession {
     override suspend fun push(src: BlobRef, dest: RemotePath, onProgress: (Long) -> Unit): PushResult {
         gate("push ${dest.absolute}")
         val bytes = blobs[src.sha256] ?: error("no blob ${src.sha256.hex}")
+        // adbd's refusal of a sync push into a folder the shell may not write (issue #1279's "nonzero_exit(1)").
+        if (shellLockedOut && overlay(dest.absolute)) throw AdbException(AdbError.NonZeroExit(1, "remote couldn't create file: Permission denied"))
         files[dest.absolute] = bytes
+        if (overlay(dest.absolute)) shellOwned += dest.absolute
         return PushResult(bytes.size.toLong(), 1, sha256Of(bytes))
     }
 

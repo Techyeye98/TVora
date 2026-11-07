@@ -4,6 +4,7 @@ import tv.cleanyour.core.model.BlobRef
 import tv.cleanyour.core.model.ChangeRecord
 import tv.cleanyour.core.model.Component
 import tv.cleanyour.core.model.EnabledState
+import tv.cleanyour.core.model.FileRoute
 import tv.cleanyour.core.model.GroupDefault
 import tv.cleanyour.core.model.HomeClaimant
 import tv.cleanyour.core.model.HomeResolution
@@ -109,17 +110,17 @@ object PlannerFixtures {
 class OverlayTransport : ConfigTransport {
     override val kind: ConfigTransportKind = ConfigTransportKind.FILE_OVERLAY
     override suspend fun readDigest(session: TvSession): Sha256? = null
-    override fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?): List<Op> {
+    override fun writePlanSteps(config: BlobRef, wallpaper: BlobRef?, route: FileRoute): List<Op> {
         require(config.size in 1..64L * 1024) { "config.json must be 1 to 65536 bytes" }
         return listOf(
             Op.StartActivity(PlannerFixtures.launcher, wait = true),
-            Op.Mkdir(RemoteDir.OVERLAY),
-            Op.PushAsset(config, CONFIG, config.sha256),
-            if (wallpaper != null) Op.PushAsset(wallpaper, WALLPAPER, wallpaper.sha256) else Op.RemoveFile(WALLPAPER),
+            Op.Mkdir(if (route == FileRoute.THEME_PROVIDER) RemoteDir.TMP else RemoteDir.OVERLAY),
+            Op.PushAsset(config, CONFIG, config.sha256, route),
+            if (wallpaper != null) Op.PushAsset(wallpaper, WALLPAPER, wallpaper.sha256, route) else Op.RemoveFile(WALLPAPER, route),
             Op.RestartHome(PlannerFixtures.launcher),
         )
     }
-    override fun resetPlanSteps(): List<Op> = listOf(Op.RemoveFile(CONFIG), Op.RemoveFile(WALLPAPER), Op.RestartHome(PlannerFixtures.launcher))
+    override fun resetPlanSteps(route: FileRoute): List<Op> = listOf(Op.RemoveFile(CONFIG, route), Op.RemoveFile(WALLPAPER, route), Op.RestartHome(PlannerFixtures.launcher))
 
     companion object {
         val CONFIG = RemotePath(RemoteDir.OVERLAY, listOf("config.json"))

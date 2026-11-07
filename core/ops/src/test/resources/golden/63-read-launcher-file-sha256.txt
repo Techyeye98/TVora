@@ -1,0 +1,10 @@
+# A file of the launcher's folder hashed as the launcher reads it
+op: Read kind=LAUNCHER_FILE_SHA256 path=/sdcard/Android/data/com.gathin.tvhome/files/config.json
+privilege: READ
+timeout_ms: 30000
+stdout_cap: 65536
+line: content read --uri content://com.gathin.tvhome.theme/config.json | sha256sum
+transfer: none
+verify: none
+prior: none
+inverse: none
