@@ -92,9 +92,10 @@ class RestorePointMachine(
 
     // The inverse is computed from the journals, never from "enable everything disabled", so things
     // the owner switched off before the app stay off (ARCHITECTURE 2.4).
+    // Both preview and confirmation read the TV again: it can change between them.
     private suspend fun preview(removeLauncher: Boolean) {
         val changes = d.ledger.changes(tvId)
-        val plan = writer.preview(tvId, PlanRequest.UndoEverything(changes, removeLauncher)) ?: return send(Phase(RestorePhase.Failed))
+        val plan = writer.preview(tvId, PlanRequest.UndoEverything(changes, removeLauncher), fresh = true) ?: return send(Phase(RestorePhase.Failed))
         val tv = d.tv(tvId)
         val profile = tv?.let { d.profileOf(it) }
         val stock = profile?.stockLaunchers?.firstOrNull()?.pkg
@@ -106,7 +107,7 @@ class RestorePointMachine(
 
     private suspend fun undoEverything(p: UndoPreview) {
         send(Phase(RestorePhase.Working("undo", 0, emptyList())))
-        val r = writer.write(tvId, PlanRequest.UndoEverything(d.ledger.changes(tvId), p.removeLauncher)) { b ->
+        val r = writer.write(tvId, PlanRequest.UndoEverything(d.ledger.changes(tvId), p.removeLauncher), fresh = true) { b ->
             if (b is Busy.Working) send(Phase(RestorePhase.Working("undo", b.percent, b.lines)))
         }
         when (r) {

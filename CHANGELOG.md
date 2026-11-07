@@ -1,5 +1,12 @@
 # TVora changelog
 
+## 0.1.3 (unreleased)
+
+- Use Android 9-compatible APIs for ADB public keys and restore ZIP timestamps.
+- Install the launcher explicitly for TV user 0 on the streamed install route.
+- Read the current TV state for both Undo everything's preview and its execution.
+- Preserve the existing UI, launcher customizations, restore-to-original-Home fix and signing identity.
+
 ## 0.1.2 (2026-11-05)
 
 - Remove Cards and modules entry points from setup and the dashboard.

@@ -123,8 +123,12 @@ class RestoreBundleTest {
         try {
             TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
             val utc = zip()
-            TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"))
-            assertContentEquals(utc, zip())
+            for (zone in listOf("Asia/Kolkata", "Pacific/Honolulu", "Europe/Berlin")) {
+                TimeZone.setDefault(TimeZone.getTimeZone(zone))
+                assertContentEquals(utc, zip(), zone)
+                val restored = RestoreBundleReader.read(ByteArrayInputStream(zip()))
+                assertEquals(baseline.tvId, restored.baseline.tvId)
+            }
         } finally {
             TimeZone.setDefault(saved)
         }

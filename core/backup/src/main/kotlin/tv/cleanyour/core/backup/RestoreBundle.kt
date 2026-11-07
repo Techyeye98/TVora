@@ -131,9 +131,10 @@ class ZipRestoreBundleWriter(
         })
         zip.use { z ->
             (listOf(RestoreBundle.MANIFEST to manifest) + entries.toList()).forEach { (name, bytes) ->
-                // the local time in the writer's zone, not the JVM default zone (ZipEntry.time), so
-                // the bytes do not depend on the device's time zone setting
-                z.putNextEntry(ZipEntry(name).apply { timeLocal = LocalDateTime.ofInstant(Instant.ofEpochMilli(now), zone) })
+                // ZipEntry.timeLocal needs Android 15. Preserve the writer's local timestamp
+                // through time on older Android too; a device-zone DST gap advances by that gap.
+                val local = LocalDateTime.ofInstant(Instant.ofEpochMilli(now), zone)
+                z.putNextEntry(ZipEntry(name).apply { time = local.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() })
                 z.write(bytes)
                 z.closeEntry()
             }

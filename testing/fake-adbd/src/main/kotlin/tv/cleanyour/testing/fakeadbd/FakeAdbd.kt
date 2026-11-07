@@ -379,8 +379,8 @@ class ServerConnection(private val adbd: FakeAdbd, private val socket: AdbSocket
     private suspend fun exec(s: ServerStream, command: String) {
         when {
             command == "echo" -> s.write("\n".encodeToByteArray())
-            command.startsWith("cmd package install -S ") -> {
-                val size = command.removePrefix("cmd package install -S ").trim().toLongOrNull()
+            command.startsWith("cmd package install --user 0 -S ") -> {
+                val size = command.removePrefix("cmd package install --user 0 -S ").trim().toLongOrNull()
                 if (size == null || size < 0 || size > 200L * 1024 * 1024) { s.write("Failure [INSTALL_FAILED_INVALID_APK: bad size]\n".encodeToByteArray()); return }
                 val reader = AdbStreamReader(s)
                 val bytes = ByteArrayOutputStream()

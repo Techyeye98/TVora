@@ -301,6 +301,56 @@ class ManageMachinesTest {
         assertFalse(undo.removeLauncher)
     }
 
+    @Test fun undoReadsTheCurrentTvForPreviewAndAgainBeforeWriting() = runTest(timeout = 30.seconds) {
+        for (remove in listOf(false, true)) {
+            val h = Harness()
+            val tv = h.knownTv()
+            val baseline = h.snapshots.baseline(tv.id)
+            h.ranDisable(tv, listOf(adPkg))
+            h.respond(PlanKind.UNDO_EVERYTHING, listOf(Op.Enable(adPkg)))
+            var liveTime = Samples.NOW_MS + 1000
+            h.prober.snapshotFor = { Samples.snapshot(reason = it, takenAtMs = liveTime) }
+            val plannedAt = mutableListOf<Long>()
+            val previous = h.planner.respond
+            h.planner.respond = { request, snapshot ->
+                if (request is PlanRequest.UndoEverything) plannedAt += snapshot.takenAtMs
+                previous(request, snapshot)
+            }
+            val m = RestorePointMachine(h.manageDeps(), backgroundScope, tv.id)
+            settle()
+            m.dispatch(RestorePointIntent.PreviewUndo); settle()
+            assertIs<RestorePhase.Preview>(m.state.value.phase)
+            assertEquals(liveTime, plannedAt.last())
+            if (remove) { m.dispatch(RestorePointIntent.RemoveLauncher(true)); settle() }
+            liveTime += 1000
+            m.dispatch(RestorePointIntent.Confirm); settle()
+            m.dispatch(RestorePointIntent.PutEverythingBack); settle()
+            assertIs<RestorePhase.Finished>(m.state.value.phase)
+            assertEquals(liveTime, plannedAt.last())
+            assertEquals(remove, h.planner.requests.filterIsInstance<PlanRequest.UndoEverything>().last().removeLauncher)
+            assertEquals(baseline, h.snapshots.baseline(tv.id))
+        }
+    }
+
+    @Test fun undoDoesNotWriteWhenTheFreshReadFails() = runTest(timeout = 30.seconds) {
+        for (failDuringPreview in listOf(true, false)) {
+            val h = Harness()
+            val tv = h.knownTv()
+            h.ranDisable(tv, listOf(adPkg))
+            val m = RestorePointMachine(h.manageDeps(), backgroundScope, tv.id)
+            settle()
+            if (failDuringPreview) h.prober.snapshotFor = { error("TV disconnected") }
+            m.dispatch(RestorePointIntent.PreviewUndo); settle()
+            // Preview may fall back to the cached state; execution must never write from it.
+            assertIs<RestorePhase.Preview>(m.state.value.phase)
+            h.prober.snapshotFor = { error("TV disconnected after preview") }
+            m.dispatch(RestorePointIntent.Confirm); settle()
+            m.dispatch(RestorePointIntent.PutEverythingBack); settle()
+            assertIs<RestorePhase.Failed>(m.state.value.phase)
+            assertTrue(h.engine.calls.none { it is FakeEngine.Call.Start })
+        }
+    }
+
     @Test fun incompleteRestoreNeverReportsSuccessOrForgetsTheLauncher() = runTest(timeout = 30.seconds) {
         for (status in listOf(RunStatus.COMPLETED_WITH_SKIPS, RunStatus.ROLLED_BACK, RunStatus.ABANDONED)) {
             val h = Harness()
