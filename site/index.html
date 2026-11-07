@@ -1,0 +1,1042 @@
+<meta charset="utf-8">
+<title>TVora</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="TVora is a free Android app that cleans up your Android TV or Google TV from your phone: it switches off adverts, tracking and bloat, gives you a home screen you arrange yourself, and keeps a restore point so everything can be put back.">
+<meta name="theme-color" content="#050507">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TVora: your TV, your way">
+<meta property="og:description" content="Clean up and personalise your Android TV from your phone. Switch off adverts and tracking, arrange a calm home screen, put everything back whenever you like. Free, no account.">
+<meta property="og:image" content="https://raw.githubusercontent.com/Techyeye98/TVora/main/docs/brand/tvora-mark.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/svg+xml" href="assets/images/tvora-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"TVora","operatingSystem":"Android 9 or newer","applicationCategory":"UtilitiesApplication","softwareVersion":"0.1.2","datePublished":"2026-11-05","fileSize":"13.8 MB","downloadUrl":"https://github.com/Techyeye98/TVora/releases/latest","license":"https://opensource.org/licenses/MIT","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Namya Mehta"},"description":"Clean up and personalise your Android TV or Google TV from your phone. Switch off adverts, tracking and bloat, arrange your home screen and restore everything when you like."}
+</script>
+<style>
+/* Layout: the page is a TV in a dark room. The hero is TVora's launcher running live; every section below is a channel you switch to as you scroll. */
+:root{
+  color-scheme:dark;
+  --bg:#040406;
+  --surface:#0c0c11;
+  --surface-2:#14141b;
+  --line:rgba(236,238,255,.08);
+  --line-strong:rgba(236,238,255,.18);
+  --fg:#f5f5f8;
+  --muted:#a2a3ae;
+  --faint:#6f707b;
+  --accent:#8c9bff;
+  --glow:#5b6cff;
+  --ok:#30d158;
+  --warn:#ffb340;
+  --focus:229 9 20;              /* rgb of the focused app; drives the hero glow */
+  --font-display:"Outfit",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-body:"Outfit",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-in-out:cubic-bezier(.77,0,.175,1);
+  --wrap:1240px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:rgba(140,155,255,.35);color:#fff}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+h1,h2,h3{font-family:var(--font-display);font-weight:300;text-wrap:balance;margin:0;letter-spacing:-.035em}
+p{margin:0}
+.wrap{max-width:var(--wrap);margin-inline:auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- nav ---------- */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:#040406}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(4,4,6,.7);backdrop-filter:saturate(1.5) blur(16px);-webkit-backdrop-filter:saturate(1.5) blur(16px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-size:19px;font-weight:500;letter-spacing:.01em}
+.brand img{width:30px;height:30px;border-radius:8px}
+.nav ul{display:flex;gap:26px;list-style:none;margin:0 0 0 auto;padding:0}
+.nav ul a{color:var(--muted);text-decoration:none;font-size:15px;transition:color .2s ease}
+@media (hover:hover) and (pointer:fine){.nav ul a:hover{color:var(--fg)}}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:54px;padding:0 28px;border-radius:999px;font:500 16px/1 var(--font-body);text-decoration:none;cursor:pointer;border:1px solid transparent;transition:transform .16s var(--ease-out),background-color .2s ease,border-color .2s ease,box-shadow .3s ease;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--fg);color:#050507;box-shadow:0 0 0 0 rgba(255,255,255,0)}
+.btn-ghost{background:transparent;color:var(--fg);border-color:var(--line-strong)}
+.btn-small{height:40px;padding:0 18px;font-size:14px}
+.btn svg{width:18px;height:18px;flex:none}
+@media (hover:hover) and (pointer:fine){
+  .btn-primary:hover{background:#fff;box-shadow:0 0 40px -6px rgba(255,255,255,.45)}
+  .btn-ghost:hover{border-color:rgba(236,238,255,.45);background:rgba(255,255,255,.04)}
+}
+
+/* ---------- channel OSD (shows when a section comes on) ---------- */
+.osd{position:fixed;z-index:25;right:max(20px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 80px);display:flex;align-items:center;gap:12px;padding:9px 14px 9px 12px;border-radius:10px;background:rgba(10,10,14,.78);border:1px solid var(--line-strong);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font:500 12px/1 var(--font-data);letter-spacing:.08em;text-transform:uppercase;color:#dfe1ea;opacity:0;transform:translateY(-6px);transition:opacity .25s ease,transform .35s var(--ease-out);pointer-events:none}
+.osd.on{opacity:1;transform:none}
+.osd b{font-weight:500;color:#7ee59a}
+.osd i{width:7px;height:7px;border-radius:50%;background:#ff453a;box-shadow:0 0 10px #ff453a}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding-block:64px 40px;overflow:hidden}
+.hero-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 55% at 50% 72%,rgb(var(--focus) / .26),transparent 70%);transition:background .6s ease}
+.hero-top{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:32px 56px;align-items:end}
+.hero h1{font-size:clamp(56px,9.4vw,140px);line-height:.9;font-weight:200;letter-spacing:-.055em}
+.hero h1 span{display:block}
+.hero h1 span+span{color:var(--muted)}
+.hero-copy{padding-bottom:10px}
+.hero-copy p{font-size:19px;line-height:1.55;color:var(--muted);max-width:30em}
+.hero-copy .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;margin:22px 0 0;padding:0;list-style:none;color:var(--faint);font-size:14px}
+.facts li{display:flex;align-items:center;gap:8px}
+.facts li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.7}
+
+.hero-stage{position:relative;margin-top:56px;padding-bottom:64px}
+.tv{position:relative;max-width:100%;aspect-ratio:16/9;border-radius:22px;padding:12px;background:linear-gradient(180deg,#1c1c24,#09090c);border:1px solid var(--line-strong);box-shadow:0 50px 100px -40px #000,0 0 140px -30px rgb(var(--focus) / .55);transition:box-shadow .6s ease}
+.tv-screen{position:relative;width:100%;height:100%;border-radius:12px;overflow:hidden;background:#000;isolation:isolate}
+.tv-feet{position:absolute;left:0;right:0;bottom:-30px;display:flex;justify-content:space-between;padding-inline:16%;pointer-events:none}
+.tv-feet i{width:5px;height:32px;border-radius:3px;background:linear-gradient(#3a3a44,#15151a)}
+.tv-feet i:first-child{transform:rotate(22deg)}
+.tv-feet i:last-child{transform:rotate(-22deg)}
+
+/* the live launcher */
+.launcher{position:absolute;inset:0;container-type:inline-size;background:#000;color:#fff;font-family:var(--font-body)}
+.launcher::before{content:"";position:absolute;inset:0;background:radial-gradient(55% 60% at 22% 64%,rgb(var(--focus) / .55),rgb(var(--focus) / .12) 55%,transparent 80%);transition:background .55s ease;z-index:0}
+.l-top{position:absolute;z-index:1;left:4.2cqw;right:4.2cqw;top:3.6cqw;display:flex;align-items:flex-start;gap:2cqw}
+.l-greet{font-size:.95cqw;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.62);font-weight:500}
+.l-time{display:flex;align-items:baseline;gap:1.2cqw;margin-top:.4cqw}
+.l-time b{font-weight:300;font-size:5.4cqw;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.l-time small{font-size:1.1cqw;color:rgba(255,255,255,.7);font-weight:500}
+.l-time span{font-size:1.05cqw;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6);padding-left:1.4cqw;border-left:1px solid rgba(255,255,255,.25)}
+.l-pills{margin-left:auto;display:flex;gap:.8cqw}
+.l-pill{display:flex;align-items:center;gap:.6cqw;height:3cqw;padding:0 1.4cqw;border-radius:99px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);font-size:1.15cqw;color:rgba(255,255,255,.9)}
+.l-pill svg{width:1.3cqw;height:1.3cqw}
+.l-title{position:absolute;z-index:1;left:4.6cqw;top:36%;font-size:3.4cqw;font-weight:300;letter-spacing:-.02em;transition:opacity .2s ease,transform .3s var(--ease-out)}
+.l-title.swap{opacity:0;transform:translateY(.6cqw)}
+.l-dock{position:absolute;z-index:1;left:3.2cqw;right:3.2cqw;top:48%;padding:1.1cqw;border-radius:1.6cqw;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);display:grid;grid-template-columns:repeat(5,1fr);gap:1.1cqw;outline:none}
+.l-app{position:relative;aspect-ratio:16/9;border-radius:.9cqw;border:0;padding:0;cursor:pointer;background:var(--c);color:#fff;font:600 1.45cqw/1 var(--font-body);letter-spacing:-.01em;display:flex;align-items:center;justify-content:center;transition:transform .28s var(--ease-out),box-shadow .28s var(--ease-out);box-shadow:0 0 0 0 rgba(255,255,255,0)}
+.l-app::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 55%);pointer-events:none}
+.l-app[aria-selected="true"]{transform:scale(1.07);box-shadow:0 0 0 .32cqw #fff,0 1.2cqw 3cqw -1cqw rgb(var(--focus) / .9)}
+.l-app.lift{transform:scale(1.12) translateY(-.8cqw)}
+.l-row2{position:absolute;z-index:1;left:4.3cqw;right:4.3cqw;top:84%;display:grid;grid-template-columns:repeat(5,1fr);gap:2.2cqw}
+.l-row2 i{display:block;aspect-ratio:16/9;border-radius:.9cqw;opacity:.55}
+.l-hint{position:absolute;z-index:2;left:50%;bottom:2.4cqw;transform:translateX(-50%);display:flex;align-items:center;gap:.8cqw;padding:.9cqw 1.6cqw;border-radius:99px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);font-size:1.15cqw;color:rgba(255,255,255,.85);white-space:nowrap;transition:opacity .4s ease}
+.l-hint kbd{font:500 1cqw/1 var(--font-data);padding:.35cqw .55cqw;border-radius:.4cqw;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08)}
+.l-hint.gone{opacity:0}
+
+/* clutter (the TV before TVora) drawn over the launcher */
+.clutter{position:absolute;inset:0;z-index:5;container-type:inline-size;background:linear-gradient(160deg,#20222b,#0e0f14 60%);padding:3.4cqw 4cqw;display:flex;flex-direction:column;gap:2.4cqw;font-size:1.25cqw;clip-path:inset(0 0 0 0);transition:clip-path 1.1s var(--ease-in-out),filter .9s ease}
+.is-clean .clutter{clip-path:inset(0 0 100% 0);filter:blur(6px);pointer-events:none}
+.c-top{display:flex;align-items:center;gap:1.6cqw;color:#cfd1da}
+.c-search{flex:1;height:3cqw;border-radius:99px;background:rgba(255,255,255,.08);display:flex;align-items:center;padding-left:1.6cqw;color:#8d8f99}
+.c-pill{height:3cqw;padding:0 1.4cqw;border-radius:99px;background:rgba(255,255,255,.08);display:flex;align-items:center;color:#c9cbd4}
+.c-banner{position:relative;flex:0 0 30%;border-radius:1cqw;background:linear-gradient(115deg,#7a2d1c,#c2541f 45%,#e3a03a);overflow:hidden;padding:2.4cqw 3cqw;display:flex;flex-direction:column;justify-content:flex-end}
+.c-banner b{font-weight:600;font-size:2.6cqw;line-height:1.05;max-width:60%}
+.c-banner small{opacity:.85;margin-top:.5cqw}
+.c-ad{position:absolute;top:1cqw;right:1cqw;background:rgba(0,0,0,.55);color:#ffd27a;border-radius:.4cqw;padding:.2cqw .6cqw;font-weight:600;font-size:1cqw;letter-spacing:.06em}
+.c-row{display:flex;flex-direction:column;gap:.8cqw}
+.c-row>span{color:#cfd1da;font-weight:500}
+.c-row>span em{font-style:normal;color:#ffb340;font-size:1cqw;margin-left:.8cqw}
+.c-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:1.4cqw}
+.c-tile{position:relative;aspect-ratio:16/9;border-radius:.6cqw;display:flex;align-items:flex-end;padding:.7cqw .8cqw;color:rgba(255,255,255,.92);font-weight:500;font-size:1.15cqw;line-height:1.1}
+.c-tile .c-ad{top:.5cqw;right:.5cqw;font-size:.85cqw}
+.t1{background:linear-gradient(135deg,#3b2a6b,#6d3cc7)}.t2{background:linear-gradient(135deg,#0d5c4f,#18a07f)}.t3{background:linear-gradient(135deg,#5a1f2e,#b13a52)}.t4{background:linear-gradient(135deg,#253b75,#3c6ad6)}.t5{background:linear-gradient(135deg,#4d4d12,#a5a02a)}
+.t6{background:linear-gradient(135deg,#663d10,#c97a1f)}.t7{background:linear-gradient(135deg,#1f4a63,#2f88b5)}.t8{background:linear-gradient(135deg,#3d1f52,#7f3fa3)}.t9{background:linear-gradient(135deg,#1d1d24,#3a3a46)}.t10{background:linear-gradient(135deg,#5a2a12,#a8501f)}
+.scan{position:absolute;inset:0;z-index:6;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(255,255,255,.9) 49.5%,rgba(255,255,255,.9) 50.5%,transparent);opacity:0;transform:scaleY(.002)}
+.is-cleaning .scan{animation:scan 1.1s var(--ease-in-out)}
+@keyframes scan{0%{opacity:0;transform:translateY(-50%) scaleY(.004)}10%{opacity:.85}100%{opacity:0;transform:translateY(50%) scaleY(.004)}}
+.tv-label{position:absolute;left:18px;bottom:18px;z-index:8;font:500 12px/1 var(--font-data);letter-spacing:.1em;text-transform:uppercase;padding:8px 11px;border-radius:8px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line-strong);color:#ffd27a;transition:color .3s ease}
+.is-clean .tv-label{color:#7ee59a}
+
+/* phone with the plan, overlapping the TV */
+.phone{position:absolute;right:-1%;bottom:0;z-index:9;width:248px;border-radius:36px;padding:7px;background:#17171d;border:1px solid var(--line-strong);box-shadow:0 30px 70px -20px #000,0 0 0 1px rgba(0,0,0,.6);transform:rotate(3deg);transition:transform .5s var(--ease-out)}
+@media (hover:hover) and (pointer:fine){.phone:hover{transform:rotate(0deg) translateY(-6px)}}
+.phone-screen{border-radius:30px;overflow:hidden;background:radial-gradient(120% 60% at 50% 0%,#151a3a,#050507 70%);padding:16px 14px;min-height:440px;display:flex;flex-direction:column}
+.p-status{align-self:center;display:flex;align-items:center;gap:6px;font-size:11px;color:#d7d8df;padding:5px 10px;border-radius:99px;border:1px solid var(--line-strong);background:rgba(255,255,255,.04)}
+.p-status i{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.p-count{display:flex;align-items:center;gap:10px;margin-top:18px}
+.p-count b{font:200 50px/1 var(--font-display);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.p-count span{font-size:15px;line-height:1.15}
+.p-list{list-style:none;margin:14px 0 0;padding:0;border:1px solid var(--line-strong);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.025)}
+.p-list li{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;font-size:12px;border-top:1px solid var(--line)}
+.p-list li:first-child{border-top:0}
+.p-list li span:last-child{font-variant-numeric:tabular-nums;color:#d7d8df;display:flex;align-items:center;gap:6px}
+.p-list li svg{width:12px;height:12px;color:var(--ok);opacity:0;transform:scale(.9);transition:opacity .25s ease,transform .25s var(--ease-out)}
+.p-list li.done svg{opacity:1;transform:scale(1)}
+.p-keep{margin-top:12px;font-size:11px;line-height:1.45;color:var(--muted)}
+.p-keep b{color:var(--fg);font-weight:500}
+.p-btn{margin-top:auto;height:44px;border-radius:99px;border:0;background:var(--fg);color:#050507;font:500 14px/1 var(--font-body);cursor:pointer;transition:transform .16s var(--ease-out),background-color .3s ease,color .3s ease}
+.p-btn:active{transform:scale(.97)}
+.p-btn[disabled]{cursor:default}
+.p-btn .lbl{display:block;transition:filter .2s ease,opacity .2s ease}
+.p-btn.swap .lbl{filter:blur(2px);opacity:.4}
+.is-clean .p-btn{background:rgba(48,209,88,.14);color:#7ee59a}
+.replay{position:absolute;left:0;bottom:6px;display:inline-flex;align-items:center;gap:8px;background:none;border:0;color:var(--muted);font:400 14px/1 var(--font-body);cursor:pointer;padding:8px 0}
+.replay svg{width:15px;height:15px}
+@media (hover:hover) and (pointer:fine){.replay:hover{color:var(--fg)}}
+
+/* ---------- sections ---------- */
+.sec{position:relative;padding-block:130px;border-top:1px solid var(--line)}
+.sec-head{max-width:720px}
+.sec-head h2{font-size:clamp(38px,5.2vw,72px);line-height:1;font-weight:200;letter-spacing:-.045em}
+.sec-head p{margin-top:22px;color:var(--muted);font-size:18px;max-width:36em}
+.ch-tag{display:inline-flex;align-items:center;gap:10px;margin-bottom:22px;font:500 12px/1 var(--font-data);letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.ch-tag b{font-weight:500;color:var(--fg);padding:5px 7px;border-radius:5px;border:1px solid var(--line-strong)}
+
+/* CRT power-on for visuals as they reach the viewport */
+html.js .power{clip-path:inset(49.6% 0 49.6% 0);filter:brightness(2.2)}
+html.js .power.on{clip-path:inset(0 0 0 0);filter:brightness(1);transition:clip-path .75s var(--ease-in-out),filter 1s ease .15s}
+
+/* what changes: live switches */
+.switches{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:64px;margin-top:64px;align-items:start}
+.counter{position:sticky;top:120px}
+.counter .big{font:200 clamp(110px,15vw,200px)/.85 var(--font-display);letter-spacing:-.06em;font-variant-numeric:tabular-nums;color:var(--fg)}
+.counter p{margin-top:16px;color:var(--muted);font-size:18px;max-width:22em}
+.counter p b{color:var(--fg);font-weight:500}
+.board{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.025),transparent);overflow:hidden}
+.board h3{font:500 12px/1 var(--font-data);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:20px 26px 12px}
+.board ul{list-style:none;margin:0;padding:0}
+.board li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;padding:16px 26px;border-top:1px solid var(--line)}
+.board li b{display:block;font-weight:400;font-size:18px;transition:color .25s ease}
+.board li.is-off b{color:var(--muted)}
+.board li small{display:block;color:var(--faint);font-size:14px;margin-top:2px}
+.sw{position:relative;width:50px;height:30px;border-radius:99px;border:0;padding:0;cursor:pointer;background:#34c759;transition:background-color .3s ease,transform .16s var(--ease-out);flex:none}
+.sw:active{transform:scale(.94)}
+.sw[aria-checked="false"]{background:#3a3a42}
+.sw[aria-checked="false"]::after{transform:translateX(-20px)}
+.sw.shake{animation:shake .4s var(--ease-out)}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+.board li small{transition:color .25s ease}
+.board li.is-off small{color:var(--warn)}
+.board li.is-protected small{color:var(--accent)}
+.board h3 .hint{float:right;letter-spacing:.06em;color:var(--accent);text-transform:none;font-family:var(--font-body);font-size:13px}
+.sw::after{content:"";position:absolute;top:3px;left:23px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:transform .35s var(--ease-out)}
+.board-split{border-top:1px solid var(--line-strong)}
+.note{margin-top:22px;color:var(--muted);font-size:15px;padding:0 26px 22px}
+
+/* steps: sticky phone + scrolling steps */
+.steps{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:72px;margin-top:40px}
+.steps-phone{position:sticky;top:110px;align-self:start;width:300px;max-width:100%;margin-inline:auto}
+.frame{position:relative;border-radius:40px;padding:8px;background:#141419;border:1px solid var(--line-strong);aspect-ratio:360/780;box-shadow:0 40px 80px -30px #000,0 0 120px -40px rgba(91,108,255,.4)}
+.frame img{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);object-fit:cover;border-radius:32px;opacity:0;transition:opacity .45s ease,filter .45s ease;filter:blur(6px)}
+.frame img.cur{opacity:1;filter:none}
+.steps ol{list-style:none;margin:0;padding:0;counter-reset:s}
+.step{counter-increment:s;min-height:62vh;display:flex;flex-direction:column;justify-content:center;padding-block:28px;border-bottom:1px solid var(--line);opacity:.35;transition:opacity .4s ease}
+.step.cur{opacity:1}
+.step:last-child{border-bottom:0}
+.step-num{font:500 13px/1 var(--font-data);color:var(--accent);letter-spacing:.1em}
+.step h3{font-size:clamp(30px,3.4vw,46px);line-height:1.05;font-weight:300;margin-top:14px}
+.step p{margin-top:16px;color:var(--muted);font-size:18px;max-width:30em}
+.step .step-shot{display:none}
+
+/* home screen studio */
+.studio{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.35fr);gap:56px;align-items:center;margin-top:64px}
+.picks{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.pick{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:22px 4px;color:var(--fg);cursor:pointer;font:inherit;position:relative}
+.pick b{display:flex;align-items:center;gap:14px;font-weight:400;font-size:21px;color:var(--muted);transition:color .2s ease}
+.pick b i{font:500 12px/1 var(--font-data);color:var(--faint);font-style:normal;transition:color .2s ease}
+.pick span{display:block;color:var(--muted);font-size:16px;line-height:1.5;margin-top:8px;padding-left:34px;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s var(--ease-out),opacity .25s ease}
+.pick[aria-pressed="true"] b{color:var(--fg)}
+.pick[aria-pressed="true"] b i{color:var(--accent)}
+.pick[aria-pressed="true"] span{max-height:7em;opacity:1}
+.pick::after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:100%;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .45s var(--ease-out)}
+.pick[aria-pressed="true"]::after{transform:scaleX(1)}
+@media (hover:hover) and (pointer:fine){.pick:hover b{color:var(--fg)}}
+.studio .tv{--focus:91 108 255}
+.studio .tv-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:opacity .35s ease,filter .35s ease}
+.studio .tv-screen img.fade{opacity:0;filter:blur(8px)}
+.studio .noise{position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+.studio .noise.on{animation:noise .35s steps(3) 1}
+@keyframes noise{0%{opacity:.9;transform:translateY(0)}50%{opacity:.6;transform:translateY(-2px)}100%{opacity:0;transform:translateY(1px)}}
+
+/* restore */
+.restore{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:72px;align-items:start;margin-top:64px}
+.proof{position:relative;border:1px solid var(--line);border-radius:28px;padding:44px;background:radial-gradient(100% 90% at 0% 0%,rgba(48,209,88,.12),transparent 60%),var(--surface);overflow:hidden}
+.proof .big{font:200 clamp(90px,11vw,150px)/.85 var(--font-display);letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.proof .big small{font-size:.32em;color:var(--muted);letter-spacing:-.02em;margin-left:.12em;font-weight:300}
+.bar{height:6px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:26px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1fa84a,#5ce07e);border-radius:inherit;transition:width 1.6s var(--ease-out)}
+.proof p{margin-top:22px;color:var(--muted);font-size:17px}
+.proof p b{color:var(--fg);font-weight:500}
+.proof .limits{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);font-size:15px;color:var(--faint)}
+.checklist{list-style:none;margin:0;padding:0}
+.checklist li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:14px;padding:22px 0;border-top:1px solid var(--line)}
+.checklist li:first-child{border-top:0;padding-top:4px}
+.checklist svg{width:22px;height:22px;color:var(--ok);margin-top:4px}
+.checklist b{display:block;font-weight:400;font-size:20px}
+.checklist span{display:block;color:var(--muted);font-size:16px;margin-top:4px}
+
+/* privacy */
+.privacy-sec{background:radial-gradient(60% 50% at 85% 0%,rgba(157,96,255,.12),transparent 70%)}
+.privacy{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:64px;border-top:1px solid var(--line)}
+.privacy div{padding:30px 30px 8px 0}
+.privacy div+div{padding-left:30px;border-left:1px solid var(--line)}
+.privacy svg{width:26px;height:26px;color:#c19aff}
+.privacy h3{font-size:22px;font-weight:400;letter-spacing:-.015em;margin-top:18px}
+.privacy p{margin-top:10px;color:var(--muted);font-size:16px}
+
+/* TV list */
+.tvs-tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:52px}
+.search{position:relative;flex:1 1 320px;max-width:480px}
+.search input{width:100%;height:54px;border-radius:99px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);font:400 16px var(--font-body);padding:0 20px 0 48px;transition:border-color .2s ease}
+.search input::placeholder{color:var(--faint)}
+.search input:focus{outline:none;border-color:var(--accent)}
+.search svg{position:absolute;left:18px;top:50%;width:18px;height:18px;transform:translateY(-50%);color:var(--faint)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:36px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--muted);font:400 14px var(--font-body);cursor:pointer;transition:border-color .2s ease,color .2s ease,background-color .2s ease,transform .16s var(--ease-out)}
+.chip[aria-pressed="true"]{border-color:rgba(140,155,255,.6);color:var(--fg);background:rgba(140,155,255,.1)}
+.chip:active{transform:scale(.97)}
+.tv-count{margin-top:20px;color:var(--faint);font-size:14px}
+.tv-grid{list-style:none;margin:14px 0 0;padding:0 0 40px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px;max-height:430px;overflow:auto;border-top:1px solid var(--line);mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent)}
+.tv-grid li{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px;min-width:0}
+.tv-grid li span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tv-grid li span:last-child{color:var(--faint);font-size:12px;white-space:nowrap}
+.tv-empty{padding:24px 0;color:var(--muted)}
+.support{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px}
+.support div{font-size:15px;color:var(--muted)}
+.support b{display:block;color:var(--fg);font-weight:500;font-size:16px;margin-bottom:6px}
+
+/* faq */
+.faq{margin-top:52px;border-top:1px solid var(--line);max-width:880px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:24px 44px 24px 0;font-size:20px;font-weight:300;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";position:absolute;right:6px;top:50%;width:11px;height:11px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-70%) rotate(45deg);transition:transform .25s var(--ease-out)}
+.faq details[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.faq .a{padding:0 0 26px;color:var(--muted);font-size:16px;max-width:44em}
+.faq .a p+p{margin-top:10px}
+.faq ol{margin:10px 0 0;padding-left:20px}
+.faq ol li{margin-top:6px}
+
+/* final */
+.final{position:relative;padding-block:150px 120px;border-top:1px solid var(--line);overflow:hidden}
+.final::before{content:"";position:absolute;left:50%;top:0;width:1100px;height:700px;transform:translate(-50%,-35%);background:radial-gradient(closest-side,rgba(91,108,255,.28),transparent);pointer-events:none}
+.final .wrap{position:relative}
+.final h2{font-size:clamp(64px,13vw,200px);line-height:.85;font-weight:200;letter-spacing:-.06em}
+.final h2 span{display:block;color:var(--muted)}
+.final-row{display:flex;flex-wrap:wrap;gap:24px 40px;align-items:end;justify-content:space-between;margin-top:48px}
+.final-row p{color:var(--muted);font-size:18px;max-width:30em}
+.final-row .meta{margin-top:10px;font-size:14px;color:var(--faint)}
+.final .actions{display:flex;flex-wrap:wrap;gap:12px}
+
+footer{border-top:1px solid var(--line);padding-block:48px 56px;color:var(--faint);font-size:14px}
+footer .wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:40px}
+footer .links{display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:flex-end;align-content:start}
+footer a{color:var(--muted);text-decoration-color:rgba(164,165,176,.4);text-underline-offset:3px}
+footer a:hover{color:var(--fg)}
+footer .credits{margin-top:14px;line-height:1.6;max-width:56em}
+footer .made{color:var(--fg);font-size:16px;display:flex;align-items:center;gap:10px}
+footer .made img{width:26px;height:26px;border-radius:7px}
+
+/* hero entrance */
+@media (prefers-reduced-motion:no-preference){
+  .hero h1 span{animation:rise 1s var(--ease-out) both}
+  .hero h1 span+span{animation-delay:.1s}
+  .hero-copy{animation:rise 1s var(--ease-out) .2s both}
+  .hero-stage .tv{animation:power .9s var(--ease-in-out) .35s both}
+  .hero-stage .phone{animation:slide 1s var(--ease-out) .7s both}
+}
+@keyframes rise{from{opacity:.001;transform:translateY(18px)}}
+@keyframes power{0%{clip-path:inset(49.5% 0 49.5% 0);filter:brightness(2.5)}60%{clip-path:inset(0 0 0 0);filter:brightness(1.4)}100%{clip-path:inset(0 0 0 0);filter:brightness(1)}}
+@keyframes slide{from{opacity:.001;transform:translateY(40px) rotate(6deg)}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .clutter,.p-btn,.p-list li svg,.pick span,.pick::after,.studio .tv-screen img,.frame img,.step,.sw,.sw::after,.bar i,.launcher::before,.l-app,.l-title,.osd{transition:none!important}
+  html.js .power{clip-path:none;filter:none}
+}
+
+/* responsive */
+@media (max-width:1060px){
+  .hero-top{grid-template-columns:minmax(0,1fr)}
+  .phone{right:0;width:220px}
+  .phone-screen{min-height:400px}
+  .switches,.studio,.restore{grid-template-columns:minmax(0,1fr);gap:44px}
+  .counter{position:static}
+  .tv-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:820px){
+  .nav ul{display:none}
+  .nav .star-btn{margin-left:auto}
+  .sec{padding-block:96px}
+  .steps{grid-template-columns:minmax(0,1fr);gap:0}
+  .steps-phone{display:none}
+  .step{min-height:0;opacity:1;display:grid;grid-template-columns:120px minmax(0,1fr);column-gap:20px;align-items:start;padding-block:28px}
+  .step .step-shot{display:block;grid-row:1/5;border-radius:18px;padding:4px;background:#141419;border:1px solid var(--line-strong);aspect-ratio:360/780}
+  .step .step-shot img{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block}
+  .step h3{font-size:24px;margin-top:8px}
+  .step p{font-size:15px;margin-top:8px}
+  .privacy,.support{grid-template-columns:minmax(0,1fr)}
+  .privacy div,.privacy div+div{padding:26px 0 4px;border-left:0}
+  .privacy div+div{border-top:1px solid var(--line)}
+  footer .wrap{grid-template-columns:minmax(0,1fr)}
+  footer .links{justify-content:flex-start}
+  .osd{top:calc(env(safe-area-inset-top,0px) + 74px)}
+}
+@media (max-width:620px){
+  body{font-size:16px}
+  .hero{padding-block:40px 24px}
+  .hero-copy p{font-size:17px}
+  .hero-copy .actions .btn{flex:1 1 100%}
+  .hero-stage{margin-top:40px;padding-bottom:0}
+  .tv{border-radius:12px;padding:6px}
+  .tv-screen{border-radius:7px}
+  .tv-feet{display:none}
+  .tv-label{left:10px;bottom:10px;font-size:10px;padding:5px 8px}
+  .l-hint{display:none}
+  .phone{position:relative;right:auto;bottom:auto;margin:-36px auto 0;width:220px;transform:none}
+  .replay{position:static;margin:14px auto 0;display:flex}
+  .board li{padding:14px 18px}
+  .board h3{padding:18px 18px 10px}
+  .note{padding:0 18px 18px}
+  .proof{padding:28px}
+  .tv-grid{grid-template-columns:minmax(0,1fr)}
+}
+
+/* GitHub stats, star button, download toast */
+.star-btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--line-strong);color:var(--fg);text-decoration:none;font-size:14px;transition:border-color .2s ease,background-color .2s ease,transform .16s var(--ease-out)}
+.star-btn:active{transform:scale(.97)}
+.star-btn svg{width:15px;height:15px;color:#ffd27a}
+.star-btn b{font-weight:500;padding-left:8px;border-left:1px solid var(--line-strong);font-variant-numeric:tabular-nums}
+@media (hover:hover) and (pointer:fine){.star-btn:hover{border-color:rgba(255,210,122,.6);background:rgba(255,210,122,.06)}}
+.nav ul{margin-left:auto}
+.stats{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-top:24px;font-size:15px;color:var(--muted)}
+.stats>span{display:flex;align-items:center;gap:8px}
+.stats b{color:var(--fg);font-weight:500;font-variant-numeric:tabular-nums;font-size:17px}
+.stats svg{width:16px;height:16px}
+.stats .st svg{color:#ffd27a}
+.live{font:500 11px/1 var(--font-data);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.live i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.live.on{color:#7ee59a}
+.live.on i{background:#30d158;box-shadow:0 0 8px #30d158}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:16px;padding:14px 12px 14px 18px;border-radius:18px;background:rgba(20,20,27,.94);border:1px solid var(--line-strong);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 20px 50px -10px #000;font-size:15px;width:max-content;max-width:calc(100% - 32px);transform:translate(-50%,20px);opacity:0;visibility:hidden;transition:transform .45s var(--ease-out),opacity .3s ease,visibility 0s .45s}
+.toast.on{transform:translate(-50%,0);opacity:1;visibility:visible;transition:transform .45s var(--ease-out),opacity .3s ease}
+.toast .tick{width:30px;height:30px;border-radius:50%;background:rgba(48,209,88,.15);color:#30d158;display:flex;align-items:center;justify-content:center;flex:none}
+.toast .tick svg{width:16px;height:16px}
+.toast-text{min-width:0}
+.toast-text small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.toast .btn{height:40px;padding:0 16px;font-size:14px;flex:none}
+.toast .btn svg{width:15px;height:15px;color:#e0a400}
+.toast-x{flex:none;width:32px;height:32px;border-radius:50%;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:20px;line-height:1}
+.toast-x:hover{color:var(--fg)}
+@media (max-width:620px){.toast{flex-wrap:wrap;gap:12px}.toast .btn{flex:1 1 auto}.star-btn{height:36px;padding:0 11px;font-size:13px}.nav .wrap{gap:10px}.nav .btn-small{padding:0 14px}}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="TVora home"><img src="assets/images/tvora-mark.svg" alt="" width="30" height="30">TVora</a>
+    <ul>
+      <li><a href="#what">What changes</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#home-screen">Home screen</a></li>
+      <li><a href="#restore">Restore</a></li>
+      <li><a href="#tvs">Supported TVs</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a class="star-btn" href="https://github.com/Techyeye98/TVora" target="_blank" rel="noopener" aria-label="Star TVora on GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg>Star <b data-stars>5</b></a>
+    <a class="btn btn-primary btn-small js-download" href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener">Download</a>
+  </div>
+</header>
+
+<div class="osd" id="osd" aria-hidden="true"><i></i><span id="osdText">CH 01</span></div>
+
+<main id="top">
+  <section class="hero" data-ch="01" data-ch-name="TVora">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-top">
+        <h1><span>Your TV.</span><span>Your way.</span></h1>
+        <div class="hero-copy">
+          <p>TVora is a free Android app that cleans up your Android TV from your phone. It switches off the adverts, tracking and apps nobody asked for, then gives you a calm home screen you arrange yourself. Everything can be put back.</p>
+          <div class="actions">
+            <a class="btn btn-primary js-download" href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+              Download the APK
+            </a>
+            <a class="btn btn-ghost" href="#how">See how it works</a>
+          </div>
+          <div class="stats">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><b data-downloads>130</b> downloads</span>
+            <span class="st"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg><b data-stars>5</b> stars on GitHub</span>
+            <span class="live" id="liveTag"><i></i><span id="liveText">From GitHub, 7 Nov</span></span>
+          </div>
+          <ul class="facts">
+            <li>Free and open source</li>
+            <li>Android 9+ phone</li>
+            <li>No account</li>
+            <li>v0.1.2</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="hero-stage" id="stage">
+        <div class="tv">
+          <div class="tv-screen">
+            <div class="launcher" id="launcher">
+              <div class="l-top">
+                <div>
+                  <div class="l-greet" id="lGreet">Good evening</div>
+                  <div class="l-time"><b id="lTime">7:30</b><small id="lAmPm">PM</small><span id="lDate">Saturday 7 November</span></div>
+                </div>
+                <div class="l-pills" aria-hidden="true">
+                  <span class="l-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="12" rx="2"/><path d="M10 15v6m4-6v6"/></svg>Inputs</span>
+                  <span class="l-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19.5" r="1"/></svg>Wi-Fi</span>
+                  <span class="l-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></span>
+                  <span class="l-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</span>
+                </div>
+              </div>
+              <div class="l-title" id="lTitle">Netflix</div>
+              <div class="l-dock" id="dock" role="listbox" aria-label="Home screen dock. Use the left and right arrow keys to move focus, like a TV remote." tabindex="0">
+                <button class="l-app" role="option" aria-selected="true" tabindex="-1" data-rgb="229 9 20" style="--c:#c8101b">Netflix</button>
+                <button class="l-app" role="option" aria-selected="false" tabindex="-1" data-rgb="26 152 255" style="--c:#1679d6">Prime Video</button>
+                <button class="l-app" role="option" aria-selected="false" tabindex="-1" data-rgb="255 0 51" style="--c:#2a2a31">YouTube</button>
+                <button class="l-app" role="option" aria-selected="false" tabindex="-1" data-rgb="120 60 255" style="--c:linear-gradient(120deg,#3a5bff,#9b3cf0 55%,#ff3d8b)">Hotstar</button>
+                <button class="l-app" role="option" aria-selected="false" tabindex="-1" data-rgb="35 196 143" style="--c:#13805c">Live TV</button>
+              </div>
+              <div class="l-row2" aria-hidden="true"><i style="background:#2c3fbf"></i><i style="background:#18406b"></i><i style="background:#12805c"></i><i style="background:#5b3fd6"></i><i style="background:#333340"></i></div>
+              <div class="l-hint" id="lHint" aria-hidden="true">Try it like a remote <kbd>←</kbd><kbd>→</kbd> or hover the apps</div>
+            </div>
+            <div class="clutter" aria-hidden="true">
+              <div class="c-top"><div class="c-search">Search for movies, shows, apps</div><div class="c-pill">For you</div><div class="c-pill">Shop</div><div class="c-pill">Free TV</div></div>
+              <div class="c-banner"><span class="c-ad">AD</span><b>Big weekend deals on new smart speakers</b><small>Sponsored · Learn more</small></div>
+              <div class="c-row"><span>Top picks for you <em>Sponsored</em></span>
+                <div class="c-tiles"><div class="c-tile t1"><span class="c-ad">AD</span>Game hub</div><div class="c-tile t2">Free channels</div><div class="c-tile t3"><span class="c-ad">AD</span>Movie deals</div><div class="c-tile t4">Smart shop</div><div class="c-tile t5">Demo mode</div></div>
+              </div>
+              <div class="c-row"><span>Apps you might like</span>
+                <div class="c-tiles"><div class="c-tile t6">Photo frame</div><div class="c-tile t7"><span class="c-ad">AD</span>Fitness+</div><div class="c-tile t8">Kids zone</div><div class="c-tile t9">Brand store</div><div class="c-tile t10">News feed</div></div>
+              </div>
+            </div>
+            <div class="scan" aria-hidden="true"></div>
+            <span class="tv-label" id="tvLabel">Before</span>
+          </div>
+          <div class="tv-feet" aria-hidden="true"><i></i><i></i></div>
+        </div>
+
+        <div class="phone" aria-label="TVora on a phone, showing the clean-up plan">
+          <div class="phone-screen">
+            <div class="p-status"><i></i>Mi TV 4A · Connected</div>
+            <div class="p-count"><b>23</b><span id="pWord">things to<br>switch off</span></div>
+            <ul class="p-list" id="pList">
+              <li><span>Adverts and sponsored rows</span><span>6<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span></li>
+              <li><span>Tracking and analytics</span><span>7<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span></li>
+              <li><span>Apps nobody asked for</span><span>8<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span></li>
+              <li><span>Xiaomi extras</span><span>2<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span></li>
+            </ul>
+            <p class="p-keep">We keep everything you use: <b>Netflix, Prime Video, Live TV and HDMI</b>, the remote and software updates.</p>
+            <button class="p-btn" id="pBtn" type="button"><span class="lbl" id="pLbl">Make it clean</span></button>
+          </div>
+        </div>
+        <button class="replay" id="replay" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+          Show the before again
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="what" data-ch="02" data-ch-name="What changes">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="ch-tag"><b>CH 02</b>What changes</div>
+        <h2>Switched off, not deleted</h2>
+        <p>Before anything changes, TVora reads your TV and shows the plan, grouped the way you'd describe it. Keep or switch off any single item under Customise.</p>
+      </div>
+      <div class="switches" id="switches">
+        <div class="counter">
+          <div class="big" id="offCount">0</div>
+          <p>things switched off on a <b>Mi TV 4A</b>. Off means asleep: each one can be put back on its own.</p>
+        </div>
+        <div class="board">
+          <h3>Switched off <span class="hint">Tap any switch</span></h3>
+          <ul id="offList">
+            <li data-n="6" data-auto data-off="Off. Asleep, not deleted."><div><b>Adverts and sponsored rows</b><small data-base="Banners and promoted tiles">Banners and promoted tiles</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Adverts and sponsored rows"></button></li>
+            <li data-n="7" data-auto data-off="Off. Asleep, not deleted."><div><b>Tracking and analytics</b><small data-base="Viewing data and ad IDs">Viewing data and ad IDs</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Tracking and analytics"></button></li>
+            <li data-n="8" data-auto data-off="Off. Asleep, not deleted."><div><b>Apps nobody asked for</b><small data-base="Preloads and auto-installs">Preloads and auto-installs</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Apps nobody asked for"></button></li>
+            <li data-n="2" data-auto data-off="Off. Asleep, not deleted."><div><b>Your TV brand's extras</b><small data-base="Stores, feeds and pop-ups">Stores, feeds and pop-ups</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Your TV brand's extras"></button></li>
+            <li data-n="0" data-auto data-off="Off. Asleep, not deleted."><div><b>Shop and demo mode</b><small data-base="Retail leftovers, where the TV has them">Retail leftovers, where the TV has them</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Shop and demo mode"></button></li>
+          </ul>
+          <div class="board-split">
+            <h3>Always kept</h3>
+            <ul id="keptList">
+            <li data-protected="Protected. TVora always keeps the TV's inputs on."><div><b>Live TV and HDMI inputs</b><small data-base="Tuner and sources">Tuner and sources</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Live TV and HDMI inputs"></button></li>
+            <li data-protected="Protected. TVora never switches off the remote or keyboard."><div><b>The remote and keyboard</b><small data-base="Every button keeps working">Every button keeps working</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="The remote and keyboard"></button></li>
+            <li data-n="1" data-off="Off. Voice search stops until you put it back."><div><b>Voice assistant</b><small data-base="Search by voice">Search by voice</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Voice assistant"></button></li>
+            <li data-n="1" data-off="Off. Phones can't cast to this TV until you put it back."><div><b>Chromecast</b><small data-base="Casting from phones">Casting from phones</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Chromecast"></button></li>
+            <li data-n="1" data-off="Kept on so the TV keeps getting security fixes. Switching off stops update nags too."><div><b>Software updates</b><small data-base="Security fixes">Security fixes</small></div><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Software updates"></button></li>
+            </ul>
+          </div>
+          <p class="note" id="swNote" aria-live="polite">Nothing is uninstalled. The Switched off list puts any app back with one tap.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="how" data-ch="03" data-ch-name="How it works">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="ch-tag"><b>CH 03</b>How it works</div>
+        <h2>Four steps from your sofa</h2>
+        <p>Phone and TV on the same Wi-Fi. TVora walks you through every screen with steps for your TV's brand.</p>
+      </div>
+      <div class="steps">
+        <div class="steps-phone">
+          <div class="frame power" id="stepFrame">
+            <img class="cur" src="assets/images/phone-step1-allow.webp" alt="TVora asking you to look at the TV and choose Always allow, then OK." width="360" height="780">
+            <img src="assets/images/phone-step2-plan.webp" alt="TVora's plan: 23 things to switch off, grouped into adverts, tracking, unwanted apps and Xiaomi extras." width="360" height="780">
+            <img src="assets/images/phone-step3-ready.webp" alt="TVora saying Your TV is ready: 23 things switched off and a restore point saved on the phone." width="360" height="780">
+            <img src="assets/images/phone-step4-check.webp" alt="TVora asking Can you see it, with a live picture from the TV and a countdown." width="360" height="780">
+          </div>
+        </div>
+        <ol>
+          <li class="step cur" data-i="0">
+            <div class="step-shot"><img src="assets/images/phone-step1-allow.webp" alt="" width="360" height="780"></div>
+            <span class="step-num">STEP 1</span>
+            <h3>Let the phone in</h3>
+            <p>Turn on debugging in the TV's Developer options. When the TV asks to trust your phone, tick Always allow and choose OK. It's the only fiddly part, and it takes about a minute.</p>
+          </li>
+          <li class="step" data-i="1">
+            <div class="step-shot"><img src="assets/images/phone-step2-plan.webp" alt="" width="360" height="780"></div>
+            <span class="step-num">STEP 2</span>
+            <h3>Review the plan</h3>
+            <p>TVora lists every app it would switch off and everything it keeps. Change anything you like under Customise, or tap Make it clean.</p>
+          </li>
+          <li class="step" data-i="2">
+            <div class="step-shot"><img src="assets/images/phone-step3-ready.webp" alt="" width="360" height="780"></div>
+            <span class="step-num">STEP 3</span>
+            <h3>Make it clean</h3>
+            <p>A restore point is saved on your phone first. Then the clutter is switched off and the new home screen goes in. Put the phone down; it buzzes when it needs you.</p>
+          </li>
+          <li class="step" data-i="3">
+            <div class="step-shot"><img src="assets/images/phone-step4-check.webp" alt="" width="360" height="780"></div>
+            <span class="step-num">STEP 4</span>
+            <h3>Check it on the TV</h3>
+            <p>Press Home on the remote and confirm you can see it. If you don't answer, TVora puts the old home screen back on its own.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="home-screen" data-ch="04" data-ch-name="Home screen">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="ch-tag"><b>CH 04</b>Home screen</div>
+        <h2>A home screen you arrange yourself</h2>
+        <p>Set it up from your phone, or rearrange it later with the TV remote. Real screenshots from a Mi TV running TVora.</p>
+      </div>
+      <div class="studio">
+        <div class="picks" id="picks">
+          <button class="pick" type="button" aria-pressed="true" data-img="assets/images/tv-home-dock.webp" data-alt="The dock with Netflix, Prime Video, JioHotstar and SmartTube under the clock."><b><i>01</i>Your dock, your order</b><span>Pick the apps along the bottom and put your favourites first. More apps sit in rows below, one press of Down away.</span></button>
+          <button class="pick" type="button" aria-pressed="false" data-img="assets/images/tv-quick-inputs.webp" data-alt="The Inputs button open, listing HDMI 1, HDMI 2, HDMI 3, AV and Live TV."><b><i>02</i>Quick buttons</b><span>Inputs, Wi-Fi and Bluetooth headphones sit beside Settings, so HDMI and a new pair of earbuds are one click away.</span></button>
+          <button class="pick" type="button" aria-pressed="false" data-img="assets/images/tv-arrange-remote.webp" data-alt="Arranging apps on the TV: an app is picked up, with the hint OK picks up an app, arrows move it, Back places it."><b><i>03</i>Arrange with the remote</b><span>Open the arrows button. OK picks up an app, the arrows move it, Back places it, and Back again saves.</span></button>
+          <button class="pick" type="button" aria-pressed="false" data-img="assets/images/tv-app-rows.webp" data-alt="Rows of apps below the dock on a night-sky wallpaper."><b><i>04</i>Show, hide and wallpaper</b><span>Hide an app from Home without uninstalling it, and use a photo from your phone as the wallpaper, with its metadata stripped first.</span></button>
+        </div>
+        <div class="tv power" id="studioTv">
+          <div class="tv-screen"><img id="studioImg" src="assets/images/tv-home-dock.webp" alt="The dock with Netflix, Prime Video, JioHotstar and SmartTube under the clock." width="1600" height="900"><div class="noise" id="noise"></div></div>
+          <div class="tv-feet" aria-hidden="true"><i></i><i></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="restore" data-ch="05" data-ch-name="Restore">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="ch-tag"><b>CH 05</b>Restore</div>
+        <h2>Everything can be put back</h2>
+        <p>TVora records every change it makes, so undo is exact: each app goes back to the state it was in, not simply switched on.</p>
+      </div>
+      <div class="restore">
+        <div class="proof" id="proof">
+          <div class="big"><span id="pkg">0</span><small>/112</small></div>
+          <div class="bar"><i id="pkgBar"></i></div>
+          <p><b>Every original package matched its baseline</b> after a full clean-up, restore and reboot on a Mi TV (MiTV-AXSO0, Android 9). The TV's own home screen came back on its own.</p>
+          <p class="limits">Restore covers the changes TVora recorded. It isn't a backup of app data, logins, firmware or changes made before you used TVora.</p>
+        </div>
+        <ul class="checklist">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>A restore point before the first change</b><span>Saved on your phone. Undo everything from it in one go.</span></div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>Put back one app at a time</b><span>The Switched off list brings back any single app.</span></div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>Save a copy outside the app</b><span>Export a zip with recovery scripts to anywhere you choose.</span></div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>It stops when something looks wrong</b><span>If the TV stops answering mid-change, you choose to carry on or undo. Nothing else changes until then.</span></div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>Check for leftovers after updates</b><span>A TV software update can switch things back on. TVora finds them and switches them off again.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec privacy-sec" id="privacy" data-ch="06" data-ch-name="Privacy">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="ch-tag"><b>CH 06</b>Privacy</div>
+        <h2>Between your phone and your TV</h2>
+        <p>TVora has no account, analytics, advertising or server of its own. Your TV records and restore points stay in the app's private storage on your phone.</p>
+      </div>
+      <div class="privacy">
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><h3>You approve every change</h3><p>Your phone's screen lock confirms it's you before TVora changes anything, and a live picture from the TV confirms it's your TV.</p></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3m-6 0 2 2"/></svg><h3>Pairing stays private</h3><p>Pairing codes are used once and never saved. The phone's key lives in Android Keystore, and Reset my key clears it.</p></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-5-5L5 19"/></svg><h3>Your photo goes to one place</h3><p>A wallpaper photo is resized, stripped of its metadata and sent only to the TV you picked. The update check reads TVora's public GitHub releases.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="tvs" data-ch="07" data-ch-name="Supported TVs">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="ch-tag"><b>CH 07</b>Supported TVs</div>
+        <h2>Lists for 248 TV models</h2>
+        <p>TVora plans with model lists from the Clean Your TV community, each made on a real TV. A TV that isn't listed gets a careful plan that only switches off what TVora is sure about.</p>
+      </div>
+      <div class="tvs-tools">
+        <label class="search" for="tvSearch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="tvSearch" type="search" placeholder="Search a brand or model, e.g. Bravia, MiTV, C7L" autocomplete="off" aria-label="Search TV models">
+        </label>
+        <div class="chips" id="chips" role="group" aria-label="Filter by brand"></div>
+      </div>
+      <p class="tv-count" id="tvCount" aria-live="polite"></p>
+      <ul class="tv-grid" id="tvGrid"></ul>
+      <div class="support">
+        <div><b>Clean-up and new home screen</b>Most Android TV sets, including the Mi TVs TVora was tested on. Where swapping the home screen isn't safe, TVora says why and leaves it.</div>
+        <div><b>Clean-up only</b>Fire TV, some TCL models and Google devices where a new home screen would break casting. You still get the adverts and tracking switched off.</div>
+        <div><b>Not supported</b>Samsung (Tizen) and LG (webOS) TVs. TVora itself has been tested by its maker on two Mi TVs.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" data-ch="08" data-ch-name="Questions">
+    <div class="wrap">
+      <div class="sec-head"><div class="ch-tag"><b>CH 08</b>Questions</div><h2>Questions</h2></div>
+      <div class="faq">
+        <details open>
+          <summary>How do I install TVora?</summary>
+          <div class="a">
+            <ol>
+              <li>On your Android phone, open the <a href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener">latest release</a>.</li>
+              <li>Under Assets, tap the file ending in .apk. You don't need a GitHub account.</li>
+              <li>Open the downloaded file. If Android asks, allow installs from your browser or file manager.</li>
+              <li>Put your phone and TV on the same Wi-Fi, open TVora and tap Start.</li>
+            </ol>
+          </div>
+        </details>
+        <details>
+          <summary>What do I need?</summary>
+          <div class="a"><p>An Android phone running Android 9 or newer, and an Android TV or Google TV on the same trusted Wi-Fi network. No computer, account or subscription.</p></div>
+        </details>
+        <details>
+          <summary>Does TVora delete apps from my TV?</summary>
+          <div class="a"><p>No. It switches apps off, which puts them to sleep. They stay installed, and you can put any of them back from the Switched off list or undo everything from the restore point.</p></div>
+        </details>
+        <details>
+          <summary>Why does it need debugging turned on?</summary>
+          <div class="a"><p>Debugging over Wi-Fi is how a phone is allowed to change settings on the TV, and the TV asks you to approve your phone first. When you tap Finish, TVora switches debugging off again unless you chose to keep it on.</p><p>Newer TVs use Wireless debugging with a six-digit pairing code. TVora handles that too.</p></div>
+        </details>
+        <details>
+          <summary>What happens if something goes wrong halfway?</summary>
+          <div class="a"><p>TVora stops and tells you what happened. You choose to carry on with the rest or undo what was done. If the new home screen doesn't take over, the old one is put back automatically.</p></div>
+        </details>
+        <details>
+          <summary>Will it work on my Samsung or LG TV?</summary>
+          <div class="a"><p>No. Samsung uses Tizen and LG uses webOS, and TVora works with Android TV and Google TV. Some TVs, such as Fire TV and some TCL models, get the clean-up but keep their own home screen.</p></div>
+        </details>
+        <details>
+          <summary>Is TVora free?</summary>
+          <div class="a"><p>Yes. It's free and open source under the MIT licence, with no ads and no in-app purchases. If it helps you, a star on GitHub is welcome.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final" data-ch="09" data-ch-name="Download">
+    <div class="wrap">
+      <h2>Your TV.<span>Your way.</span></h2>
+      <div class="final-row">
+        <div>
+          <p>Install TVora on your phone, sit down with the TV remote, and give it five minutes.</p>
+          <p class="meta mono">v0.1.2 · 13.8 MB APK · Android 9+</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary js-download" href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+            Download the APK
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/Techyeye98/TVora" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="color:#ffd27a"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg>Star on GitHub · <span data-stars>5</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
+  <div class="toast-text"><span id="toastTitle">Downloading TVora</span><small>If TVora helps you, a star on GitHub helps others find it.</small></div>
+  <a class="btn btn-primary" href="https://github.com/Techyeye98/TVora" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="color:#e0a400"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg>Star on GitHub</a>
+  <button class="toast-x" id="toastX" type="button" aria-label="Close">×</button>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <div class="made"><img src="assets/images/tvora-mark.svg" alt="" width="26" height="26">Made by Namya Mehta</div>
+      <p class="credits">TVora is an independent derivative of the <a href="https://github.com/udhaykumarbala/cleanyourtv-app" target="_blank" rel="noopener">Clean Your TV app</a> by udhaykumarbala. Its launcher, themes and TV lists come from <a href="https://github.com/Gathin23/cleanyourtv" target="_blank" rel="noopener">Clean Your TV</a> by Gathin and contributors, who don't endorse TVora. MIT licence. App names and logos in the screenshots belong to their owners.</p>
+    </div>
+    <div class="links">
+      <a href="https://github.com/Techyeye98/TVora" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/Techyeye98/TVora/blob/main/PRIVACY.md" target="_blank" rel="noopener">Privacy</a>
+      <a href="https://github.com/Techyeye98/TVora/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
+      <a href="https://t.me/Techyeye" target="_blank" rel="noopener">Telegram (t.me/Techyeye)</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasIO='IntersectionObserver' in window;
+  if(!reduce&&hasIO) root.classList.add('js');
+
+  /* ---------- live clock in the launcher ---------- */
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function tick(){
+    var d=new Date(),h=d.getHours(),m=d.getMinutes();
+    document.getElementById('lGreet').textContent=h<5?'Good night':h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+    document.getElementById('lTime').textContent=((h%12)||12)+':'+(m<10?'0':'')+m;
+    document.getElementById('lAmPm').textContent=h<12?'AM':'PM';
+    document.getElementById('lDate').textContent=days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()];
+  }
+  tick(); setInterval(tick,15000);
+
+  /* ---------- dock focus: glow follows the focused app ---------- */
+  var apps=[].slice.call(document.querySelectorAll('.l-app')), dock=document.getElementById('dock'),
+      title=document.getElementById('lTitle'), hint=document.getElementById('lHint'), hero=document.querySelector('.hero'), focusIdx=0, touched=false;
+  function setFocus(i,user){
+    i=(i+apps.length)%apps.length; if(i===focusIdx&&!user)return;
+    focusIdx=i;
+    apps.forEach(function(a,k){a.setAttribute('aria-selected',k===i?'true':'false');});
+    root.style.setProperty('--focus',apps[i].dataset.rgb);
+    title.classList.add('swap');
+    setTimeout(function(){title.textContent=apps[i].textContent;title.classList.remove('swap');},reduce?0:140);
+    if(user&&!touched){touched=true;hint.classList.add('gone');}
+  }
+  apps.forEach(function(a,k){
+    a.addEventListener('mouseenter',function(){if(stage.classList.contains('is-clean'))setFocus(k,true);});
+    a.addEventListener('click',function(){setFocus(k,true);});
+  });
+  var heroVisible=true;
+  if(hasIO){new IntersectionObserver(function(e){heroVisible=e[0].isIntersecting;},{threshold:.25}).observe(hero);}
+  document.addEventListener('keydown',function(e){
+    if(!heroVisible||!stage.classList.contains('is-clean'))return;
+    var t=e.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+    if(e.key==='ArrowRight'){setFocus(focusIdx+1,true);e.preventDefault();}
+    else if(e.key==='ArrowLeft'){setFocus(focusIdx-1,true);e.preventDefault();}
+    else if(e.key==='Enter'&&document.activeElement===dock){var a=apps[focusIdx];a.classList.add('lift');setTimeout(function(){a.classList.remove('lift');},260);}
+  });
+
+  /* ---------- hero: the phone cleans the TV ---------- */
+  var stage=document.getElementById('stage'), btn=document.getElementById('pBtn'), lbl=document.getElementById('pLbl'),
+      items=[].slice.call(document.querySelectorAll('#pList li')), label=document.getElementById('tvLabel'),
+      word=document.getElementById('pWord'), replay=document.getElementById('replay'), timers=[], idle=null;
+  function later(fn,ms){timers.push(setTimeout(fn,reduce?0:ms));}
+  function setLbl(t){lbl.parentNode.classList.add('swap');later(function(){lbl.textContent=t;lbl.parentNode.classList.remove('swap');},120);}
+  function idleTour(){
+    clearInterval(idle);
+    if(reduce)return;
+    idle=setInterval(function(){if(!touched&&heroVisible)setFocus(focusIdx+1,false);},2600);
+  }
+  function clean(){
+    if(stage.classList.contains('is-clean')||btn.disabled)return;
+    btn.disabled=true; setLbl('Making it clean…');
+    items.forEach(function(li,i){later(function(){li.classList.add('done');},260+i*220);});
+    later(function(){stage.classList.add('is-cleaning','is-clean');label.textContent='After TVora';},1200);
+    later(function(){stage.classList.remove('is-cleaning');setLbl('Your TV is ready');word.innerHTML='things<br>switched off';replay.hidden=false;idleTour();},2300);
+  }
+  function reset(){
+    timers.forEach(clearTimeout);timers=[];clearInterval(idle);
+    stage.classList.remove('is-clean','is-cleaning');items.forEach(function(li){li.classList.remove('done');});
+    label.textContent='Before';lbl.textContent='Make it clean';word.innerHTML='things to<br>switch off';btn.disabled=false;replay.hidden=true;
+  }
+  btn.addEventListener('click',clean);
+  replay.addEventListener('click',function(){reset();btn.focus();});
+  if(reduce){clean();} else {later(clean,2200);}
+
+  /* ---------- channel OSD as sections come on ---------- */
+  var osd=document.getElementById('osd'), osdText=document.getElementById('osdText'), osdT=null, lastCh='01';
+  if(hasIO){
+    var chObs=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(!en.isIntersecting)return;
+        var ch=en.target.dataset.ch; if(ch===lastCh)return; lastCh=ch;
+        osdText.textContent='CH '+ch+'  '+en.target.dataset.chName;
+        osd.classList.add('on'); clearTimeout(osdT); osdT=setTimeout(function(){osd.classList.remove('on');},1500);
+      });
+    },{rootMargin:'-45% 0px -50% 0px'});
+    [].forEach.call(document.querySelectorAll('[data-ch]'),function(s){chObs.observe(s);});
+  }
+
+  /* ---------- CRT power-on for visuals ---------- */
+  var powers=[].slice.call(document.querySelectorAll('.power'));
+  if(root.classList.contains('js')){
+    var pObs=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add('on');pObs.unobserve(en.target);}});},{threshold:.2});
+    powers.forEach(function(p){pObs.observe(p);});
+    setTimeout(function(){powers.forEach(function(p){p.classList.add('on');});},6000);
+  }
+
+  /* ---------- CH 02: working switches, counter follows them ---------- */
+  var rows=[].slice.call(document.querySelectorAll('#offList li, #keptList li')), offCount=document.getElementById('offCount'),
+      swNote=document.getElementById('swNote'), baseNote=swNote.textContent, autoDone=false, autoTimers=[], noteT=null;
+  function count(el,to,ms){
+    var from=+el.textContent||0; if(reduce){el.textContent=to;return;}
+    var t0=performance.now();
+    (function f(t){var p=Math.min(1,(t-t0)/ms),v=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));el.textContent=v;if(p<1)requestAnimationFrame(f);})(t0);
+  }
+  function total(){return rows.reduce(function(s,li){return s+(li.classList.contains('is-off')?(+li.dataset.n||0):0);},0);}
+  function setRow(li,on){
+    var sw=li.querySelector('.sw'), sm=li.querySelector('small');
+    sw.setAttribute('aria-checked',on?'true':'false');
+    li.classList.toggle('is-off',!on);
+    sm.textContent=on?sm.dataset.base:(li.dataset.off||sm.dataset.base);
+    count(offCount,total(),350);
+  }
+  function say(t){swNote.textContent=t;clearTimeout(noteT);noteT=setTimeout(function(){swNote.textContent=baseNote;},3200);}
+  rows.forEach(function(li){
+    var sw=li.querySelector('.sw');
+    sw.addEventListener('click',function(){
+      if(!autoDone){autoTimers.forEach(clearTimeout);autoDone=true;}
+      if(li.dataset.protected){
+        sw.classList.remove('shake');void sw.offsetWidth;sw.classList.add('shake');
+        li.classList.add('is-protected');li.querySelector('small').textContent=li.dataset.protected;
+        setTimeout(function(){li.classList.remove('is-protected');var sm=li.querySelector('small');sm.textContent=sm.dataset.base;},2600);
+        return;
+      }
+      var on=sw.getAttribute('aria-checked')!=='true';
+      setRow(li,on);
+      var name=li.querySelector('b').textContent;
+      say(on?name+' is back on.':name+' switched off. Tap again to put it back.');
+    });
+  });
+  function runSwitches(){
+    if(autoDone)return;
+    rows.filter(function(li){return li.hasAttribute('data-auto');}).forEach(function(li,i){
+      autoTimers.push(setTimeout(function(){if(!autoDone)setRow(li,false);if(i===4)autoDone=true;},reduce?0:300+i*380));
+    });
+  }
+  function onceVisible(el,fn,th){
+    if(!hasIO||reduce){fn();return;}
+    var o=new IntersectionObserver(function(e){if(e[0].isIntersecting){o.disconnect();fn();}},{threshold:th||.35});o.observe(el);
+  }
+  onceVisible(document.getElementById('switches'),runSwitches,.3);
+
+  /* ---------- scroll reveal: content rises into place as it enters the screen ---------- */
+  if(!reduce&&hasIO&&Element.prototype.animate){
+    var sel=['.sec-head > *','.counter','.board','.steps-phone','.step','.studio > *','.proof','.checklist > li','.privacy > div',
+      '.tvs-tools','.tv-count','.tv-grid','.support > div','.faq','.final h2','.final-row > *','footer .wrap > *'];
+    var els=[].slice.call(document.querySelectorAll(sel.join(','))).filter(function(el){return el.getBoundingClientRect().top>innerHeight*0.92;});
+    els.forEach(function(el){el.style.opacity='0';el.style.transform='translateY(36px)';});
+    var rio=new IntersectionObserver(function(entries){
+      entries.filter(function(en){return en.isIntersecting;}).map(function(en){return en.target;})
+        .sort(function(x,y){var a=x.getBoundingClientRect(),b=y.getBoundingClientRect();return a.top-b.top||a.left-b.left;})
+        .forEach(function(el,i){
+          rio.unobserve(el);
+          var an=el.animate([{opacity:0,transform:'translateY(36px)'},{opacity:1,transform:'translateY(0)'}],{duration:800,delay:i*80,easing:'cubic-bezier(.23,1,.32,1)',fill:'forwards'});
+          an.onfinish=function(){el.style.opacity='';el.style.transform='';an.cancel();};
+        });
+    },{rootMargin:'0px 0px -10% 0px'});
+    els.forEach(function(el){rio.observe(el);});
+    /* safety: never leave anything hidden */
+    setTimeout(function(){els.forEach(function(el){if(el.style.opacity==='0'&&el.getBoundingClientRect().top<innerHeight){el.style.opacity='';el.style.transform='';}});},4000);
+  }
+
+  /* ---------- restore proof counts to 112 ---------- */
+  onceVisible(document.getElementById('proof'),function(){
+    count(document.getElementById('pkg'),112,1500);
+    document.getElementById('pkgBar').style.width='100%';
+  },.4);
+
+  /* ---------- steps: sticky phone follows the step in view ---------- */
+  var steps=[].slice.call(document.querySelectorAll('.step')), shots=[].slice.call(document.querySelectorAll('#stepFrame img'));
+  if(hasIO){
+    var sObs=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(!en.isIntersecting)return;
+        var i=+en.target.dataset.i;
+        steps.forEach(function(s,k){s.classList.toggle('cur',k===i);});
+        shots.forEach(function(s,k){s.classList.toggle('cur',k===i);});
+      });
+    },{rootMargin:'-45% 0px -45% 0px'});
+    steps.forEach(function(s){sObs.observe(s);});
+  }
+
+  /* ---------- home screen picker with a channel-flip ---------- */
+  var picks=[].slice.call(document.querySelectorAll('.pick')), img=document.getElementById('studioImg'), noise=document.getElementById('noise');
+  picks.forEach(function(p){
+    var pre=new Image(); pre.src=p.dataset.img;
+    p.addEventListener('click',function(){
+      if(p.getAttribute('aria-pressed')==='true')return;
+      picks.forEach(function(o){o.setAttribute('aria-pressed',o===p?'true':'false');});
+      if(reduce){img.src=p.dataset.img;img.alt=p.dataset.alt;return;}
+      img.classList.add('fade'); noise.classList.remove('on'); void noise.offsetWidth; noise.classList.add('on');
+      setTimeout(function(){img.src=p.dataset.img;img.alt=p.dataset.alt;img.classList.remove('fade');},200);
+    });
+  });
+
+
+  /* ---------- live GitHub stats + direct APK download + star toast ---------- */
+  var REPO='Techyeye98/TVora', apk=null, CK='tvora-gh-v1';
+  function apply(d){
+    [].forEach.call(document.querySelectorAll('[data-stars]'),function(el){el.textContent=d.stars;});
+    [].forEach.call(document.querySelectorAll('[data-downloads]'),function(el){el.textContent=d.downloads;});
+    if(d.apk)apk=d.apk;
+    var tag=document.getElementById('liveTag');tag.classList.add('on');document.getElementById('liveText').textContent='Live from GitHub';
+  }
+  function load(){
+    var cached=null;try{cached=JSON.parse(localStorage.getItem(CK)||'null');}catch(e){}
+    if(cached&&Date.now()-cached.t<3600000){apply(cached);return;}
+    Promise.all([
+      fetch('https://api.github.com/repos/'+REPO).then(function(r){if(!r.ok)throw 0;return r.json();}),
+      fetch('https://api.github.com/repos/'+REPO+'/releases?per_page=100').then(function(r){if(!r.ok)throw 0;return r.json();})
+    ]).then(function(res){
+      var repo=res[0],rels=res[1],downloads=0,latest=null;
+      rels.forEach(function(r){r.assets.forEach(function(a){if(/\.apk$/i.test(a.name))downloads+=a.download_count;});
+        if(!latest&&!r.draft&&!r.prerelease){var a=r.assets.filter(function(x){return /\.apk$/i.test(x.name);})[0];if(a)latest={url:a.browser_download_url,name:a.name};}});
+      var d={t:Date.now(),stars:repo.stargazers_count,downloads:downloads,apk:latest};
+      try{localStorage.setItem(CK,JSON.stringify(d));}catch(e){}
+      apply(d);
+    }).catch(function(){/* keep the last known numbers and the release-page link */});
+  }
+  load();
+  var toast=document.getElementById('toast'), toastT=null;
+  function showToast(title){
+    document.getElementById('toastTitle').textContent=title;
+    toast.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){toast.classList.remove('on');},14000);
+  }
+  document.getElementById('toastX').addEventListener('click',function(){toast.classList.remove('on');});
+  [].forEach.call(document.querySelectorAll('.js-download'),function(a){
+    a.addEventListener('click',function(e){
+      if(apk){e.preventDefault();window.location.href=apk.url;showToast('Downloading '+apk.name);}
+      else{showToast('Opening the latest release on GitHub');}
+    });
+  });
+
+  /* ---------- TV list ---------- */
+  var TVS=[{"n":"AiPro2K","os":"Android TV 14"},{"n":"AIWA AI PONT SA","os":"Google TV 14"},{"n":"Amazon Fire TV, AFTDEC012E","os":"Android 11 / Fire OS"},{"n":"Amazon Fire TV smart TV","os":"Fire OS 7.6.8.5 / Android 9"},{"n":"Amazon Fire TV 50\" 4K smart TV","os":"Fire OS 7.7.1.7 / Android 9"},{"n":"Amazon Fire TV Stick 4K, 1st gen 2018","os":"Fire OS 6.7.1.1 / Android 7.1"},{"n":"Amazon Fire TV Stick 4K, 2nd gen 2023","os":"Fire OS 8.1.8.5 / Android 11"},{"n":"Amazon Fire TV Stick 4K Max, 1st gen 2021","os":"Fire OS 7.7.1.3 / Android 9"},{"n":"Amazon Fire TV Stick Lite, 1st gen 2020","os":"Fire OS 7.7.1.7 / Android 9"},{"n":"Anker Nebula Cosmos projector D2140","os":"Android TV 9"},{"n":"Anker Nebula projector D2426","os":"Android TV 14"},{"n":"Artel smart TV","os":"Android 7.0"},{"n":"BenQ E55-735","os":"Google TV 14"},{"n":"BenQ E55-750","os":"Google TV"},{"n":"BenQ GV32 portable projector","os":"Google TV 14"},{"n":"BYINTEK T5 Max projector","os":"Google TV 14"},{"n":"BYINTEK Love U4 projector, 1080P","os":"Android 9"},{"n":"Caxium 58\" 147 cm UHD Smart TV","os":"Android TV 9"},{"n":"Cecotec VQU10065S 65\" QLED","os":"Android TV 14"},{"n":"Challenger 32T22 BT","os":"Android 7.0"},{"n":"CHiQ AI PONT","os":"Android TV 11"},{"n":"CHiQ AI PONT","os":"Google TV 14"},{"n":"Compac ATV R2","os":"Android TV 9"},{"n":"Skyworth Coocaa K3 Pro 90P3D Max","os":"Android 11"},{"n":"Dialog ViU","os":"Android TV 9"},{"n":"EKO 2K Google TV","os":"Google TV 14"},{"n":"Epson LS800 laser projector","os":"Android TV 14"},{"n":"FFalcon","os":"Android TV 11"},{"n":"FFalcon","os":"Android 5.1.1"},{"n":"Formovie Laser 4K projector","os":"Android TV 14"},{"n":"Formovie / Fengmi projector MiProjM05","os":"Android TV 9"},{"n":"Freebox Player POP","os":"Android TV 10"},{"n":"Gadnic PROJ100W projector","os":"Google TV 14"},{"n":"Chromecast with Google TV 4K","os":"Google TV 14"},{"n":"Chromecast with Google TV HD","os":"Google TV 14"},{"n":"Google TV Streamer 4K","os":"Google TV 14"},{"n":"Grundig Android UHD TV","os":"Android TV 14"},{"n":"Haier Android TV DVB2K","os":"Android TV 11"},{"n":"Haier H32S80EFX","os":"Google TV 14"},{"n":"Hisense 65D62QH","os":"Android TV 11"},{"n":"Hisense E5Q Pro","os":"Android TV 11"},{"n":"Hisense Fire TV","os":"Fire OS 8.0 / Android 11"},{"n":"Hisense HG9","os":"Android TV 9"},{"n":"Hisense HiSmartTV A4","os":"Android TV 9"},{"n":"Hisense HiSmartTV A4","os":"Android TV 11"},{"n":"Hisense SmartTV 4K FFM","os":"Android TV 10"},{"n":"Hisense SmartTV 4K FFM","os":"Android 11"},{"n":"Hisense SmartTV 4K FFM","os":"Google TV 12"},{"n":"Hisense U75","os":"Google TV 12"},{"n":"Hitachi 65QLEDSM20","os":"Android TV 11"},{"n":"Hitachi CDH-LE32SMART21","os":"Android TV 11"},{"n":"INCLO Google TV 4K","os":"Google TV 11"},{"n":"Insignia 55\" F30 4K Fire TV","os":"Fire OS 7 / Android 9"},{"n":"JMGO N1S projector","os":"Google TV 14"},{"n":"JVC Android TV","os":"Android TV 11"},{"n":"Kalley 43G200","os":"Google TV 14"},{"n":"Kalley R10G","os":"Google TV 14"},{"n":"Karbonn SWTV-20AE","os":"Android TV 10"},{"n":"Kogan Google TV","os":"Google TV 14"},{"n":"KTC 4K Smart TV","os":"Google TV 14"},{"n":"Liberton LTV 24H01AT","os":"Android TV 11"},{"n":"Lumio Vision 7 55\"","os":"Google TV 14"},{"n":"Motorola MT4310","os":"Android TV 11"},{"n":"Motorola SWTV-24AE-FHD","os":"Google TV 14"},{"n":"MTC UK 2K Android TV","os":"Android TV 11"},{"n":"Noblex NoblexTV","os":"Android TV 11"},{"n":"Nokia Streaming Box 8000","os":"Android TV 14"},{"n":"Nokia Streaming Box 8010","os":"Android TV 14"},{"n":"NVIDIA SHIELD TV 2019 tube","os":"Android TV 11"},{"n":"NVIDIA SHIELD TV Pro 2019","os":"Android TV 11"},{"n":"OK. AI PONT","os":"Android TV 11"},{"n":"OnePlus TV","os":"Android TV 10"},{"n":"OnePlus TV","os":"Google TV 14"},{"n":"OnePlus Y1 43\"","os":"Android TV 11"},{"n":"onn. 4K Plus Streaming","os":"Google TV 14"},{"n":"onn 4K Streaming Box","os":"Google TV 14"},{"n":"Panasonic 4KTV-0SU","os":"Android TV 10"},{"n":"Panasonic 4KTV-JUP","os":"Android TV 11"},{"n":"Panasonic TH-40HS550K","os":"Android TV 11"},{"n":"PEAQ PTV 43AQU-5023C","os":"Android TV 11"},{"n":"Philips 50PUD7406/43","os":"Android TV 11"},{"n":"Philips 50PUS8517/12","os":"Android TV 11"},{"n":"Philips 55OLED707/12","os":"Android TV 11"},{"n":"Philips 55OLED708/12","os":"Google TV 12"},{"n":"Philips 55PUS7503/12","os":"Android TV 8.0"},{"n":"Philips 65PUS8102/12","os":"Android TV 8.0"},{"n":"Philips 65PUS9435/12","os":"Android TV 12"},{"n":"Philips 75PUS8505/12","os":"Android TV 12"},{"n":"Philips Google TV TA7","os":"Google TV 14"},{"n":"Philips R8G Google TV","os":"Google TV 14"},{"n":"Philips Smart 4K TV","os":"Google TV 14"},{"n":"Philips TPM191E","os":"Android TV 12"},{"n":"Polytron 2K","os":"Android TV 11"},{"n":"Portronics Beem 470 Smart LED Projector","os":"Android 11"},{"n":"PRISM+ Q65 Ultra 2026 QLED 4K AI Google TV","os":"Google TV 14"},{"n":"RCA AI PONT SA","os":"Android 14"},{"n":"Redmi TV","os":"Android 5.1.1"},{"n":"Redmi TV","os":"Android TV 9"},{"n":"RockTek GB1","os":"Google TV 14"},{"n":"Sankey SMART2KTVSE","os":"Android TV 13"},{"n":"SANYO ATV R2","os":"Android TV 9"},{"n":"SHARP AQUOS TVE21F","os":"Android TV 14"},{"n":"Skyworth 65A3F","os":"Android 13"},{"n":"Skyworth 7S60_A5","os":"Coocaa OS / Android 8"},{"n":"Skyworth / Coocaa 8R40_K5C","os":"Android 8.0"},{"n":"Skyworth SW-22SA","os":"Android TV 14"},{"n":"Skyworth SWTV-21AE","os":"Android TV 14"},{"n":"Skyworth SWTV-22AE-FHD","os":"Google TV 14"},{"n":"Skyworth SWTV-24AE-4K NF","os":"Google TV 14"},{"n":"Skyworth SWTV-24NA-4K NF","os":"Google TV 14"},{"n":"Sony BRAVIA 4K GB","os":"Android TV 9"},{"n":"Sony BRAVIA 4K GB","os":"Android TV 9"},{"n":"Sony BRAVIA 4K UR2","os":"Android TV 10"},{"n":"Sony BRAVIA 4K UR3","os":"Android TV 10"},{"n":"Sony BRAVIA 4K VH1","os":"Google TV 12"},{"n":"Sony BRAVIA 4K VH2","os":"Google TV 12"},{"n":"Sony BRAVIA 4K VH21","os":"Google TV 12"},{"n":"Sony BRAVIA 4K VH21","os":"Google TV 12"},{"n":"Sony BRAVIA 9 II","os":"Google TV 14"},{"n":"Sony BRAVIA 4K AE1","os":"Google TV 12"},{"n":"Sony BRAVIA 4K AE2","os":"Google TV 14"},{"n":"Sony BRAVIA BF1","os":"Google TV 12"},{"n":"Sony BRAVIA TL2","os":"Android TV 11"},{"n":"Sony BRAVIA VU31 4K","os":"Google TV 14"},{"n":"Sony BRAVIA KD-43X80L","os":"Google TV 12"},{"n":"Sony BRAVIA KD-49X8307C","os":"Android TV 7.0"},{"n":"Sony BRAVIA KD-55X8509C","os":"Android TV 7.0"},{"n":"Sony BRAVIA KD-55X85J","os":"Google TV 12"},{"n":"Sony BRAVIA KD-55XE8596","os":"Android TV 9"},{"n":"Sony BRAVIA KD-55XF7596","os":"Android TV 9"},{"n":"Sony BRAVIA KD-55XF8096","os":"Android TV 9"},{"n":"Sony BRAVIA KD-65X80J","os":"Google TV 10"},{"n":"Sony BRAVIA KD-65X82L","os":"Google TV 12"},{"n":"Sony BRAVIA KD-65X9300D","os":"Android TV 8.0"},{"n":"Sony BRAVIA X9000H","os":"Android TV 12"},{"n":"Sony BRAVIA XBR-55X850C","os":"Android TV 8.0"},{"n":"Sony BRAVIA XBR-55X850D","os":"Android TV 8.0.0"},{"n":"Sony BRAVIA XBR-65X900F","os":"Android TV 9"},{"n":"Sony BRAVIA XBR-65X900E","os":"Android TV 9"},{"n":"Sony XR-65A80J","os":"Google TV 12"},{"n":"Sony XR-65X90J","os":"Android TV 10"},{"n":"Stellamore T950S projector","os":"Android 13"},{"n":"Super General 55\" 4K","os":"Android 9"},{"n":"TCL 32L5A","os":"Android TV 11"},{"n":"TCL 32S5400A","os":"Android TV 11"},{"n":"TCL 32S5K","os":"Android TV 11"},{"n":"TCL 40S5400A","os":"Android TV 11"},{"n":"TCL 43C645","os":"Google TV launcher on Android TV 11"},{"n":"TCL 43EP660","os":"Android TV 9"},{"n":"TCL 43P615","os":"Android TV 11"},{"n":"TCL 43S450F-CA","os":"Fire OS 8.1.8.5 / Android 11"},{"n":"TCL 43S5400A","os":"Android TV 11"},{"n":"TCL 43S5K","os":"Google TV 14"},{"n":"TCL 50C725K","os":"Android TV 11"},{"n":"TCL 50DP660","os":"Android TV 8.0"},{"n":"TCL 50EP680","os":"Android TV 11"},{"n":"TCL 50P615","os":"Android TV 11"},{"n":"TCL 50P735","os":"Google TV 11"},{"n":"TCL 55C715 QLED","os":"Android TV 9"},{"n":"TCL 55C725","os":"Google TV launcher on Android TV 11"},{"n":"TCL 55C745, 2023","os":"Google TV 14"},{"n":"TCL 55C7K QD-Mini LED, 2025, UK","os":"Google TV 14"},{"n":"TCL 55C815","os":"Android TV 11"},{"n":"TCL 55EP640","os":"Android TV 11"},{"n":"TCL 55P638","os":"Android TV 11"},{"n":"TCL 55P7K, Middle East","os":"Google TV 12"},{"n":"TCL 55P8LS QD-Mini LED, Vietnam","os":"Google TV 12"},{"n":"TCL 55S470G","os":"Google TV 12"},{"n":"TCL 55S546","os":"Google TV 11"},{"n":"TCL 58S571F","os":"Fire OS 8 / Android 11"},{"n":"TCL 65C725","os":"Android TV 11"},{"n":"TCL 65C735","os":"Google TV 11"},{"n":"TCL 65C7K","os":"Google TV 14"},{"n":"TCL 65C7L","os":"Google TV 14"},{"n":"TCL 65Q550G","os":"Google TV"},{"n":"TCL 65Q650G","os":"Google TV launcher on Android TV 11"},{"n":"TCL 85RM7L","os":"Google TV 14"},{"n":"TCL ak30a5","os":"Android TV 9"},{"n":"TCL BeyondTV","os":"Android TV 9"},{"n":"TCL BeyondTV, Poland","os":"Android TV 9"},{"n":"TCL BeyondTV, EU/Nordic","os":"Android TV 9"},{"n":"TCL BeyondTV2, Android 11 build","os":"Android TV 11"},{"n":"TCL BeyondTV2","os":"Android TV 9"},{"n":"TCL C755 QD-Mini LED, 2024, Australia","os":"Google TV 14"},{"n":"TCL 75C845X2, UK/Europe","os":"Google TV 14"},{"n":"TCL C89B 85\", 2024, a local variant of the C855","os":"Google TV 14"},{"n":"TCL Smart TV Pro","os":"Google TV 11"},{"n":"TCL Smart TV Pro","os":"Google TV 11"},{"n":"TCL Smart TV","os":"Google TV 11"},{"n":"TCL Smart TV Pro","os":"Google TV 12"},{"n":"TCL Smart TV Pro","os":"Android TV 12"},{"n":"TCL 75T7","os":"Google TV 14"},{"n":"TCL Smart TV Pro","os":"Google TV 12"},{"n":"TCL 55\" 4K Google TV, 2023","os":"Google TV 12"},{"n":"TCL L40S66E","os":"Android TV 11"},{"n":"TCL / FFalcon China","os":"Android 14"},{"n":"TCL 55Q10G Pro","os":"Android TV 11"},{"n":"TCL Q7C","os":"Google TV 14"},{"n":"TCL QM6K Pro, 2025","os":"Google TV 14"},{"n":"TCL UnionTV, Latin America","os":"Android TV 9"},{"n":"Tele System TS ON T2/HD","os":"Android TV 11"},{"n":"Thomson 32HE5800","os":"Android TV 9"},{"n":"Thomson 43RT1055 FA Series","os":"Android TV 14"},{"n":"Thomson SPPL 4K Google TV","os":"Android TV 14"},{"n":"Thomson T32RTL6000","os":"Android TV 9"},{"n":"TiVo Stream 4K","os":"Android TV 12"},{"n":"Tornado 65UA1400E","os":"Android TV 11"},{"n":"Toshiba","os":"Android TV 11"},{"n":"Toshiba Fire TV","os":"Fire OS 7 / Android 9"},{"n":"Turkcell TV+ 4K Box","os":"Android TV 10"},{"n":"Verizon Stream TV, 1st gen","os":"Android 12"},{"n":"Vidda VIDAA_TV","os":"Android TV 11"},{"n":"Vision 2024VISION43STV","os":"Android 13"},{"n":"Vu 4K","os":"Google TV 12"},{"n":"Vu Premium FHD 43-inch","os":"Android TV 9"},{"n":"Wanbo X5 Pro projector","os":"Google TV 14"},{"n":"XGIMI Horizon S Pro projector","os":"Android TV 11"},{"n":"XGIMI MoGo 2 projector","os":"Android TV 11"},{"n":"XGIMI MoGo 3 Pro projector","os":"Google TV 14"},{"n":"Xiaomi Mi Box 3","os":"Android TV 9"},{"n":"Xiaomi Mi Box S","os":"Android TV 9"},{"n":"Xiaomi Mi Box S 2nd gen","os":"Google TV 11"},{"n":"Xiaomi Mi TV 4A","os":"Android TV 10"},{"n":"Xiaomi MiTV-AESP0 stick","os":"Android TV 9"},{"n":"Xiaomi TV Box S 3rd gen","os":"Google TV 14"},{"n":"Xiaomi TV Stick 4K 2nd gen","os":"Google TV 14"},{"n":"Xiaomi MiTV-ANSP0","os":"Android TV 9"},{"n":"Xiaomi MiTV-ASTP0","os":"Android TV 9"},{"n":"Xiaomi MiTV-ASTP1","os":"Android TV 9"},{"n":"Xiaomi Redmi Smart TV A Pro 55\" 2025 Energy-saving","os":"Android 14"},{"n":"Xiaomi MiTV-AXFR1","os":"Android TV 11"},{"n":"Xiaomi MiTV-AXSO0","os":"Android TV 9"},{"n":"Xiaomi MiTV-AXSO2","os":"Android TV 9"},{"n":"Xiaomi TV Stick 4K","os":"Android TV 14"},{"n":"Xiaomi TV S Pro 100 Mini LED 2025","os":"Android 14"},{"n":"Xiaomi MiTV-MFTR0","os":"Android 11"},{"n":"Xiaomi TV S Mini LED 75 2025","os":"Google TV 14"},{"n":"Xiaomi Mi TV","os":"Android TV 10"},{"n":"Xiaomi Mi TV P1 43\"","os":"Android TV 11"},{"n":"Xiaomi MiTV-MOOR2 / MOOR4","os":"Google TV 11"},{"n":"Xiaomi MiTV-MOSR4","os":"Google TV 11"},{"n":"Xiaomi MiTV-MSSP0 / Xiaomi Mi TV 4A 32","os":"Android TV 9"},{"n":"Xiaomi MiTV-MSSP1","os":"Android TV 9"},{"n":"Xiaomi MiTV-MSSP2","os":"Android TV 9"},{"n":"Xiaomi MiTV-MSSP3","os":"Android TV 11"},{"n":"Xiaomi MiTV-MSSP3","os":"Android TV 9"},{"n":"Xiaomi TV EA Pro 55\"","os":"Android TV 10"},{"n":"Xiaomi TV A Pro 75\" 2026","os":"Google TV 14"}];
+  var grid=document.getElementById('tvGrid'), q=document.getElementById('tvSearch'), countEl=document.getElementById('tvCount'), chips=document.getElementById('chips'), brand='All';
+  function brandOf(n){var b=n.split(/[\s,]/)[0]; if(/^Redmi$/i.test(b))return 'Xiaomi'; if(/^Chromecast$|^Google$/i.test(b))return 'Google'; if(/^Amazon$/i.test(b))return 'Fire TV'; return b;}
+  TVS.forEach(function(t){t.b=brandOf(t.n);});
+  ['All','TCL','Sony','Xiaomi','Philips','Hisense','Fire TV','Google','OnePlus'].forEach(function(b){
+    var c=document.createElement('button');c.type='button';c.className='chip';c.textContent=b;c.setAttribute('aria-pressed',b==='All'?'true':'false');
+    c.addEventListener('click',function(){brand=b;[].forEach.call(chips.children,function(x){x.setAttribute('aria-pressed',x===c?'true':'false');});render();});chips.appendChild(c);});
+  function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function render(){
+    var term=q.value.trim().toLowerCase();
+    var list=TVS.filter(function(t){return (brand==='All'||t.b===brand)&&(!term||(t.n+' '+t.os).toLowerCase().indexOf(term)>-1);});
+    countEl.textContent=list.length+(list.length===1?' model':' models')+(brand!=='All'?' from '+brand:'')+(term?' matching “'+q.value.trim()+'”':'');
+    grid.innerHTML=list.length?list.map(function(t){return '<li><span title="'+esc(t.n)+'">'+esc(t.n)+'</span><span>'+esc(t.os)+'</span></li>';}).join(''):'<li class="tv-empty">No listed model matches. TVora still works on unlisted Android TVs, carefully.</li>';
+  }
+  q.addEventListener('input',render); render();
+})();
+</script>
