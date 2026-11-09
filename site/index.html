@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"TVora","operatingSystem":"Android 9 or newer","applicationCategory":"UtilitiesApplication","softwareVersion":"0.1.2","datePublished":"2026-11-05","fileSize":"13.8 MB","downloadUrl":"https://github.com/Techyeye98/TVora/releases/latest","license":"https://opensource.org/licenses/MIT","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Namya Mehta"},"description":"Clean up and personalise your Android TV or Google TV from your phone. Switch off adverts, tracking and bloat, arrange your home screen and restore everything when you like."}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"TVora","operatingSystem":"Android 9 or newer","applicationCategory":"UtilitiesApplication","softwareVersion":"0.1.5","datePublished":"2026-11-08","fileSize":"13.8 MB","downloadUrl":"https://github.com/Techyeye98/TVora/releases/latest","license":"https://opensource.org/licenses/MIT","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Namya Mehta"},"description":"Clean up and personalise your Android TV or Google TV from your phone. Switch off adverts, tracking and bloat, arrange your home screen and restore everything when you like."}
 </script>
 <style>
 /* Layout: the page is a TV in a dark room. The hero is TVora's launcher running live; every section below is a channel you switch to as you scroll. */
@@ -422,6 +422,12 @@ footer .made img{width:26px;height:26px;border-radius:7px}
 .toast-x:hover{color:var(--fg)}
 @media (max-width:620px){.toast{flex-wrap:wrap;gap:12px}.toast .btn{flex:1 1 auto}.star-btn{height:36px;padding:0 11px;font-size:13px}.nav .wrap{gap:10px}.nav .btn-small{padding:0 14px}}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+.rel-pill{display:inline-flex;align-items:center;gap:10px;max-width:100%;margin-bottom:22px;padding:6px 12px 6px 6px;border-radius:99px;border:1px solid var(--line-strong);background:rgba(255,255,255,.03);color:var(--muted);text-decoration:none;font-size:14px;transition:border-color .2s ease,color .2s ease}
+.rel-pill b{flex:none;font:500 12px/1 var(--font-data);color:#050507;background:var(--fg);padding:6px 9px;border-radius:99px}
+.rel-pill span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rel-pill svg{flex:none;width:14px;height:14px}
+@media (hover:hover) and (pointer:fine){.rel-pill:hover{border-color:rgba(236,238,255,.4);color:var(--fg)}}
 </style>
 
 <header class="nav">
@@ -435,7 +441,7 @@ footer .made img{width:26px;height:26px;border-radius:7px}
       <li><a href="#tvs">Supported TVs</a></li>
       <li><a href="#faq">FAQ</a></li>
     </ul>
-    <a class="star-btn" href="https://github.com/Techyeye98/TVora" target="_blank" rel="noopener" aria-label="Star TVora on GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg>Star <b data-stars>5</b></a>
+    <a class="star-btn" href="https://github.com/Techyeye98/TVora" target="_blank" rel="noopener" aria-label="Star TVora on GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg>Star <b data-stars>8</b></a>
     <a class="btn btn-primary btn-small js-download" href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener">Download</a>
   </div>
 </header>
@@ -449,6 +455,7 @@ footer .made img{width:26px;height:26px;border-radius:7px}
       <div class="hero-top">
         <h1><span>Your TV.</span><span>Your way.</span></h1>
         <div class="hero-copy">
+          <a class="rel-pill" id="relPill" href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener"><b data-ver>v0.1.5</b><span id="relNote">Reconnects when your TV's address changes</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
           <p>TVora is a free Android app that cleans up your Android TV from your phone. It switches off the adverts, tracking and apps nobody asked for, then gives you a calm home screen you arrange yourself. Everything can be put back.</p>
           <div class="actions">
             <a class="btn btn-primary js-download" href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener">
@@ -458,15 +465,15 @@ footer .made img{width:26px;height:26px;border-radius:7px}
             <a class="btn btn-ghost" href="#how">See how it works</a>
           </div>
           <div class="stats">
-            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><b data-downloads>130</b> downloads</span>
-            <span class="st"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg><b data-stars>5</b> stars on GitHub</span>
-            <span class="live" id="liveTag"><i></i><span id="liveText">From GitHub, 7 Nov</span></span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><b data-downloads>145</b> downloads</span>
+            <span class="st"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg><b data-stars>8</b> stars on GitHub</span>
+            <span class="live" id="liveTag"><i></i><span id="liveText">From GitHub, 9 Nov</span></span>
           </div>
           <ul class="facts">
             <li>Free and open source</li>
             <li>Android 9+ phone</li>
             <li>No account</li>
-            <li>v0.1.2</li>
+            <li><span data-ver>v0.1.5</span></li>
           </ul>
         </div>
       </div>
@@ -629,10 +636,10 @@ footer .made img{width:26px;height:26px;border-radius:7px}
       </div>
       <div class="studio">
         <div class="picks" id="picks">
-          <button class="pick" type="button" aria-pressed="true" data-img="assets/images/tv-home-dock.webp" data-alt="The dock with Netflix, Prime Video, JioHotstar and SmartTube under the clock."><b><i>01</i>Your dock, your order</b><span>Pick the apps along the bottom and put your favourites first. More apps sit in rows below, one press of Down away.</span></button>
+          <button class="pick" type="button" aria-pressed="true" data-img="assets/images/tv-home-dock.webp" data-alt="The dock with Netflix, Prime Video, JioHotstar and SmartTube under the clock."><b><i>01</i>Your dock, your order</b><span>Pick the apps along the bottom, including the TV's own apps like Live TV, and put your favourites first. More apps sit in rows below, one press of Down away.</span></button>
           <button class="pick" type="button" aria-pressed="false" data-img="assets/images/tv-quick-inputs.webp" data-alt="The Inputs button open, listing HDMI 1, HDMI 2, HDMI 3, AV and Live TV."><b><i>02</i>Quick buttons</b><span>Inputs, Wi-Fi and Bluetooth headphones sit beside Settings, so HDMI and a new pair of earbuds are one click away.</span></button>
           <button class="pick" type="button" aria-pressed="false" data-img="assets/images/tv-arrange-remote.webp" data-alt="Arranging apps on the TV: an app is picked up, with the hint OK picks up an app, arrows move it, Back places it."><b><i>03</i>Arrange with the remote</b><span>Open the arrows button. OK picks up an app, the arrows move it, Back places it, and Back again saves.</span></button>
-          <button class="pick" type="button" aria-pressed="false" data-img="assets/images/tv-app-rows.webp" data-alt="Rows of apps below the dock on a night-sky wallpaper."><b><i>04</i>Show, hide and wallpaper</b><span>Hide an app from Home without uninstalling it, and use a photo from your phone as the wallpaper, with its metadata stripped first.</span></button>
+          <button class="pick" type="button" aria-pressed="false" data-img="assets/images/tv-app-rows.webp" data-alt="Rows of apps below the dock on a night-sky wallpaper."><b><i>04</i>Show, hide and wallpaper</b><span>Hide an app from Home without uninstalling it, and use a photo from your phone as the wallpaper, with its metadata stripped first. Changing the look or wallpaper keeps your app order, hidden apps and shortcuts.</span></button>
         </div>
         <div class="tv power" id="studioTv">
           <div class="tv-screen"><img id="studioImg" src="assets/images/tv-home-dock.webp" alt="The dock with Netflix, Prime Video, JioHotstar and SmartTube under the clock." width="1600" height="900"><div class="noise" id="noise"></div></div>
@@ -660,7 +667,8 @@ footer .made img{width:26px;height:26px;border-radius:7px}
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>A restore point before the first change</b><span>Saved on your phone. Undo everything from it in one go.</span></div></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>Put back one app at a time</b><span>The Switched off list brings back any single app.</span></div></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>Save a copy outside the app</b><span>Export a zip with recovery scripts to anywhere you choose.</span></div></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>It stops when something looks wrong</b><span>If the TV stops answering mid-change, you choose to carry on or undo. Nothing else changes until then.</span></div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>It pauses safely if the connection drops</b><span>If the TV stops answering mid-change, TVora pauses, reconnects and lets you carry on or undo. Nothing else changes until then.</span></div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>Undo checks the TV first</b><span>Undo everything reads the TV's current state before it previews and before it runs, so it only changes what still needs changing.</span></div></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><div><b>Check for leftovers after updates</b><span>A TV software update can switch things back on. TVora finds them and switches them off again.</span></div></li>
         </ul>
       </div>
@@ -676,7 +684,7 @@ footer .made img{width:26px;height:26px;border-radius:7px}
       </div>
       <div class="privacy">
         <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><h3>You approve every change</h3><p>Your phone's screen lock confirms it's you before TVora changes anything, and a live picture from the TV confirms it's your TV.</p></div>
-        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3m-6 0 2 2"/></svg><h3>Pairing stays private</h3><p>Pairing codes are used once and never saved. The phone's key lives in Android Keystore, and Reset my key clears it.</p></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3m-6 0 2 2"/></svg><h3>Pairing stays private</h3><p>Pairing codes are used once and never saved. The phone's key lives in Android Keystore, and TVora uses it to find your TV again if its address changes. Reset my key clears it.</p></div>
         <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-5-5L5 19"/></svg><h3>Your photo goes to one place</h3><p>A wallpaper photo is resized, stripped of its metadata and sent only to the TV you picked. The update check reads TVora's public GitHub releases.</p></div>
       </div>
     </div>
@@ -700,7 +708,7 @@ footer .made img{width:26px;height:26px;border-radius:7px}
       <ul class="tv-grid" id="tvGrid"></ul>
       <div class="support">
         <div><b>Clean-up and new home screen</b>Most Android TV sets, including the Mi TVs TVora was tested on. Where swapping the home screen isn't safe, TVora says why and leaves it.</div>
-        <div><b>Clean-up only</b>Fire TV, some TCL models and Google devices where a new home screen would break casting. You still get the adverts and tracking switched off.</div>
+        <div><b>Clean-up only</b>Fire TV, some TCL models and Google devices where a new home screen would break casting. You still get the adverts and tracking switched off. Brand essentials, like Skyworth remote services and TCL update helpers, are never touched.</div>
         <div><b>Not supported</b>Samsung (Tizen) and LG (webOS) TVs. TVora itself has been tested by its maker on two Mi TVs.</div>
       </div>
     </div>
@@ -742,6 +750,10 @@ footer .made img{width:26px;height:26px;border-radius:7px}
           <div class="a"><p>No. Samsung uses Tizen and LG uses webOS, and TVora works with Android TV and Google TV. Some TVs, such as Fire TV and some TCL models, get the clean-up but keep their own home screen.</p></div>
         </details>
         <details>
+          <summary>How do I update to a new version?</summary>
+          <div class="a"><p>TVora shows a banner when a new release is out, and Settings has Check for updates. Download the new APK and install it over the old one. Don't uninstall first: your restore points and paired TVs stay.</p></div>
+        </details>
+        <details>
           <summary>Is TVora free?</summary>
           <div class="a"><p>Yes. It's free and open source under the MIT licence, with no ads and no in-app purchases. If it helps you, a star on GitHub is welcome.</p></div>
         </details>
@@ -755,14 +767,14 @@ footer .made img{width:26px;height:26px;border-radius:7px}
       <div class="final-row">
         <div>
           <p>Install TVora on your phone, sit down with the TV remote, and give it five minutes.</p>
-          <p class="meta mono">v0.1.2 · 13.8 MB APK · Android 9+</p>
+          <p class="meta mono"><span data-ver>v0.1.5</span> · <span data-size>13.8 MB</span> APK · Android 9+ · released <span data-date>8 Nov 2026</span></p>
         </div>
         <div class="actions">
           <a class="btn btn-primary js-download" href="https://github.com/Techyeye98/TVora/releases/latest" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
             Download the APK
           </a>
-          <a class="btn btn-ghost" href="https://github.com/Techyeye98/TVora" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="color:#ffd27a"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg>Star on GitHub · <span data-stars>5</span></a>
+          <a class="btn btn-ghost" href="https://github.com/Techyeye98/TVora" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="color:#ffd27a"><path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></svg>Star on GitHub · <span data-stars>8</span></a>
         </div>
       </div>
     </div>
@@ -986,11 +998,16 @@ footer .made img{width:26px;height:26px;border-radius:7px}
 
 
   /* ---------- live GitHub stats + direct APK download + star toast ---------- */
-  var REPO='Techyeye98/TVora', apk=null, CK='tvora-gh-v1';
+  var REPO='Techyeye98/TVora', apk=null, CK='tvora-gh-v2';
   function apply(d){
     [].forEach.call(document.querySelectorAll('[data-stars]'),function(el){el.textContent=d.stars;});
     [].forEach.call(document.querySelectorAll('[data-downloads]'),function(el){el.textContent=d.downloads;});
     if(d.apk)apk=d.apk;
+    if(d.ver){[].forEach.call(document.querySelectorAll('[data-ver]'),function(el){el.textContent=d.ver;});}
+    if(d.size){[].forEach.call(document.querySelectorAll('[data-size]'),function(el){el.textContent=d.size;});}
+    if(d.date){[].forEach.call(document.querySelectorAll('[data-date]'),function(el){el.textContent=d.date;});}
+    if(d.note){document.getElementById('relNote').textContent=d.note;}
+    if(d.page){document.getElementById('relPill').href=d.page;}
     var tag=document.getElementById('liveTag');tag.classList.add('on');document.getElementById('liveText').textContent='Live from GitHub';
   }
   function load(){
@@ -1002,11 +1019,27 @@ footer .made img{width:26px;height:26px;border-radius:7px}
     ]).then(function(res){
       var repo=res[0],rels=res[1],downloads=0,latest=null;
       rels.forEach(function(r){r.assets.forEach(function(a){if(/\.apk$/i.test(a.name))downloads+=a.download_count;});
-        if(!latest&&!r.draft&&!r.prerelease){var a=r.assets.filter(function(x){return /\.apk$/i.test(x.name);})[0];if(a)latest={url:a.browser_download_url,name:a.name};}});
-      var d={t:Date.now(),stars:repo.stargazers_count,downloads:downloads,apk:latest};
+        if(!latest&&!r.draft&&!r.prerelease){var a=r.assets.filter(function(x){return /\.apk$/i.test(x.name);})[0];if(a)latest={url:a.browser_download_url,name:a.name,size:a.size,rel:r};}});
+      var d={t:Date.now(),stars:repo.stargazers_count,downloads:downloads,apk:latest&&{url:latest.url,name:latest.name}};
+      if(latest){
+        var r=latest.rel, dt=new Date(r.published_at||r.created_at);
+        d.ver=r.tag_name; d.page=r.html_url;
+        d.size=(latest.size/1e6).toFixed(1)+' MB';
+        d.date=dt.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()]+' '+dt.getFullYear();
+        d.note=firstLine(r.body)||'See what\'s new';
+      }
       try{localStorage.setItem(CK,JSON.stringify(d));}catch(e){}
       apply(d);
     }).catch(function(){/* keep the last known numbers and the release-page link */});
+  }
+  function firstLine(b){
+    if(!b)return '';
+    var lines=b.split(/\r?\n/).map(function(l){
+        return l.replace(/^[#>*\-\s]+/,'').replace(/[*_`]/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1')
+                .replace(/^tvora\s*v?[\d.]+\s*[:\-–—]?\s*/i,'').trim();})
+      .filter(function(l){return l&&!/^(changes|what'?s new|install|checks)\b/i.test(l);});
+    var s=lines[0]||''; s=s.charAt(0).toUpperCase()+s.slice(1);
+    return s.length>72?s.slice(0,70).replace(/[\s,;:]+\S*$/,'')+'…':s;
   }
   load();
   var toast=document.getElementById('toast'), toastT=null;

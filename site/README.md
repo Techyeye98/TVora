@@ -50,8 +50,13 @@ Website-v2/
 
 ## Updating
 
-- New release: change `v0.1.2` and `13.8 MB` in `index.html` (hero facts, final section) and the
-  JSON-LD block at the top (`softwareVersion`, `datePublished`, `fileSize`).
+- **New release: nothing to change.** On every visit the page reads the latest GitHub release and
+  fills in the version, APK size, release date, the release-notes headline (first line of the
+  release body) and the direct APK link. Write a good first line in each release's notes; it shows
+  in the hero pill.
+- Values written in the HTML (v0.1.5, 13.8 MB, 145 downloads, 8 stars) are only the fallback when
+  GitHub can't be reached. Refresh them now and then, along with `softwareVersion` / `datePublished`
+  in the JSON-LD block (search engines read that one, they don't run the script).
 - Dock apps in the hero: edit the five `.l-app` buttons (`data-rgb` is the glow colour).
 
 ## Publishing on GitHub Pages
